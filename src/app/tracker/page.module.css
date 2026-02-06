@@ -1,0 +1,47 @@
+.gradientBg {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.container {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 600px;
+  width: 100%;
+  padding: 40px;
+}
+
+.container h1 {
+  color: #333;
+  margin-bottom: 10px;
+  font-size: 28px;
+}
+
+.subtitle {
+  color: #666;
+  margin-bottom: 30px;
+  font-size: 14px;
+}
+
+.locationInfo {
+  margin-top: 20px;
+}
+
+.backLink {
+  display: inline-block;
+  margin-top: 20px;
+  color: #667eea;
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.3s;
+}
+
+.backLink:hover {
+  color: #764ba2;
+  text-decoration: underline;
+}

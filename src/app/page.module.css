@@ -1,0 +1,246 @@
+.dashboardBg {
+  background: #f5f7fa;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 30px;
+  border-radius: 15px;
+  margin-bottom: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.header h1 {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  opacity: 0.9;
+  font-size: 16px;
+  margin-bottom: 15px;
+}
+
+.standaloneLink {
+  display: inline-block;
+  color: white;
+  opacity: 0.9;
+  text-decoration: none;
+  font-size: 14px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  transition: all 0.3s;
+}
+
+.standaloneLink:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.createTracker {
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  margin-bottom: 30px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.createTracker h2 {
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.formGroup {
+  margin-bottom: 20px;
+}
+
+.formGroup label {
+  display: block;
+  color: #666;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.generatedLink {
+  margin-top: 20px;
+  padding: 15px;
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
+  border-radius: 8px;
+}
+
+.generatedLink h3 {
+  color: #155724;
+  margin-bottom: 10px;
+}
+
+.linkText {
+  font-family: monospace;
+  background: white;
+  padding: 10px;
+  border-radius: 5px;
+  word-break: break-all;
+  margin: 10px 0;
+}
+
+.trackersList {
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.trackersList h2 {
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.trackerCard {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  border-left: 4px solid #667eea;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.trackerCard:hover {
+  transform: translateX(5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.trackerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.trackerName {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.trackerId {
+  font-size: 12px;
+  color: #666;
+  font-family: monospace;
+}
+
+.trackerActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.locationsCount {
+  display: inline-block;
+  background: #667eea;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.deleteBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 5px;
+  border-radius: 5px;
+  transition: background 0.2s;
+}
+
+.deleteBtn:hover {
+  background: rgba(255, 0, 0, 0.1);
+}
+
+.trackerInfo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.infoItem {
+  font-size: 14px;
+  color: #666;
+}
+
+.infoItem strong {
+  color: #333;
+}
+
+.trackerDetails {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 2px solid #e0e0e0;
+}
+
+.locationEntry {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.locationTime {
+  font-weight: 600;
+  color: #667eea;
+  margin-bottom: 10px;
+}
+
+.locationCoords {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.coordItem {
+  font-size: 14px;
+}
+
+.coordLabel {
+  color: #666;
+  font-size: 12px;
+}
+
+.coordValue {
+  color: #333;
+  font-weight: 500;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.emptyStateIcon {
+  font-size: 48px;
+  margin-bottom: 15px;
+}
