@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Tracker Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .create-tracker {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .create-tracker h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            margin-left: 10px;
+        }
+
+        .generated-link {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+        }
+
+        .generated-link.active {
+            display: block;
+        }
+
+        .link-text {
+            font-family: monospace;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            word-break: break-all;
+            margin: 10px 0;
+        }
+
+        .trackers-list {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .trackers-list h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .tracker-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .tracker-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .tracker-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .tracker-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .tracker-id {
+            font-size: 12px;
+            color: #666;
+            font-family: monospace;
+        }
+
+        .tracker-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .info-item {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .info-item strong {
+            color: #333;
+        }
+
+        .locations-count {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .tracker-details {
+            display: none;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .tracker-details.active {
+            display: block;
+        }
+
+        .location-entry {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .location-time {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .location-coords {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .coord-item {
+            font-size: 14px;
+        }
+
+        .coord-label {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .coord-value {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .view-map-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .view-map-btn:hover {
+            background: #218838;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📍 Location Tracker Dashboard</h1>
+        <p class="subtitle">Create and manage location tracking links</p>
+    </div>
+
+    <div class="create-tracker">
+        <h2>Create New Tracker</h2>
+        <div class="form-group">
+            <label for="trackerName">Tracker Name</label>
+            <input type="text" id="trackerName" placeholder="e.g., Family Trip, Lost Phone, Delivery Tracking">
+        </div>
+        <button class="btn" onclick="createTracker()">Create Tracking Link</button>
+        
+        <div id="generatedLink" class="generated-link">
+            <h3>✓ Tracking Link Created!</h3>
+            <p>Share this link to track location:</p>
+            <div class="link-text" id="trackingUrl"></div>
+            <button class="btn btn-secondary" onclick="copyLink()">Copy Link</button>
+        </div>
+    </div>
+
+    <div class="trackers-list">
+        <h2>Active Trackers</h2>
+        <div id="trackersList">
+            <div class="empty-state">
+                <div class="empty-state-icon">📭</div>
+                <p>No trackers yet. Create your first one above!</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        let currentTrackingUrl = '';
+
+        async function createTracker() {
+            const name = document.getElementById('trackerName').value || 'Unnamed Tracker';
+            
+            try {
+                const response = await fetch(`${API_URL}/create-tracker`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    currentTrackingUrl = result.trackingUrl;
+                    document.getElementById('trackingUrl').textContent = result.trackingUrl;
+                    document.getElementById('generatedLink').classList.add('active');
+                    document.getElementById('trackerName').value = '';
+                    
+                    // Refresh trackers list
+                    loadTrackers();
+                }
+            } catch (error) {
+                console.error('Error creating tracker:', error);
+                alert('Error creating tracker. Please make sure the server is running.');
+            }
+        }
+
+        function copyLink() {
+            navigator.clipboard.writeText(currentTrackingUrl).then(() => {
+                alert('Link copied to clipboard!');
+            });
+        }
+
+        async function loadTrackers() {
+            try {
+                const response = await fetch(`${API_URL}/trackers`);
+                const result = await response.json();
+                
+                if (result.success && result.trackers.length > 0) {
+                    displayTrackers(result.trackers);
+                }
+            } catch (error) {
+                console.error('Error loading trackers:', error);
+            }
+        }
+
+        function displayTrackers(trackers) {
+            const listContainer = document.getElementById('trackersList');
+            
+            if (trackers.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <p>No trackers yet. Create your first one above!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            listContainer.innerHTML = trackers.map(tracker => `
+                <div class="tracker-card" onclick="toggleTrackerDetails('${tracker.id}')">
+                    <div class="tracker-header">
+                        <div>
+                            <div class="tracker-name">${tracker.name}</div>
+                            <div class="tracker-id">ID: ${tracker.id}</div>
+                        </div>
+                        <span class="locations-count">${tracker.locations.length} locations</span>
+                    </div>
+                    <div class="tracker-info">
+                        <div class="info-item">
+                            <strong>Created:</strong> ${new Date(tracker.created).toLocaleString()}
+                        </div>
+                        <div class="info-item">
+                            <strong>Last Update:</strong> ${tracker.locations.length > 0 ? new Date(tracker.locations[tracker.locations.length - 1].timestamp).toLocaleString() : 'Never'}
+                        </div>
+                    </div>
+                    
+                    <div id="details-${tracker.id}" class="tracker-details">
+                        ${tracker.locations.length > 0 ? tracker.locations.map(location => `
+                            <div class="location-entry">
+                                <div class="location-time">📅 ${new Date(location.timestamp).toLocaleString()}</div>
+                                <div class="location-coords">
+                                    <div class="coord-item">
+                                        <div class="coord-label">Latitude</div>
+                                        <div class="coord-value">${location.latitude.toFixed(6)}</div>
+                                    </div>
+                                    <div class="coord-item">
+                                        <div class="coord-label">Longitude</div>
+                                        <div class="coord-value">${location.longitude.toFixed(6)}</div>
+                                    </div>
+                                    <div class="coord-item">
+                                        <div class="coord-label">Accuracy</div>
+                                        <div class="coord-value">±${location.accuracy.toFixed(2)}m</div>
+                                    </div>
+                                </div>
+                                <div class="location-coords">
+                                    <div class="coord-item">
+                                        <div class="coord-label">Device</div>
+                                        <div class="coord-value">${location.deviceInfo?.os || 'Unknown'} - ${location.deviceInfo?.browser || 'Unknown'}</div>
+                                    </div>
+                                    <div class="coord-item">
+                                        <div class="coord-label">Screen</div>
+                                        <div class="coord-value">${location.deviceInfo?.screen || 'Unknown'}</div>
+                                    </div>
+                                </div>
+                                <button class="view-map-btn" onclick="viewOnMap(${location.latitude}, ${location.longitude}); event.stopPropagation();">
+                                    🗺️ View on Map
+                                </button>
+                            </div>
+                        `).join('') : '<p style="color: #666;">No locations recorded yet.</p>'}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleTrackerDetails(trackerId) {
+            const details = document.getElementById(`details-${trackerId}`);
+            details.classList.toggle('active');
+        }
+
+        function viewOnMap(lat, lng) {
+            window.open(`https://www.google.com/maps?q=${lat},${lng}&z=15`, '_blank');
+        }
+
+        // Load trackers on page load
+        window.onload = function() {
+            loadTrackers();
+            
+            // Auto-refresh every 10 seconds
+            setInterval(loadTrackers, 10000);
+        };
+    </script>
+</body>
+</html>
