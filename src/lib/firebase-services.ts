@@ -78,6 +78,9 @@ export async function getTrackerFromFirebase(trackingId: string): Promise<Tracke
     }
     
     const data = snapshot.data();
+    if (!data.userId) {
+      console.warn(`Tracker ${trackingId} has no userId - may be a legacy tracker`);
+    }
     return {
       id: snapshot.id,
       name: data.name || 'Unnamed Tracker',

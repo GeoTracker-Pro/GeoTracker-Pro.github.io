@@ -57,7 +57,12 @@ export default function Dashboard() {
       return;
     }
 
-    const tracker = await createTrackerAsync(trackerName, user?.uid);
+    if (!user) {
+      alert('You must be signed in to create a tracker.');
+      return;
+    }
+
+    const tracker = await createTrackerAsync(trackerName, user.uid);
     if (tracker) {
       const url = `${baseUrl}/track?id=${tracker.id}`;
       setGeneratedUrl(url);
