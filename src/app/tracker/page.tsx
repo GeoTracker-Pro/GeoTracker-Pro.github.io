@@ -158,7 +158,7 @@ export default function StandaloneTracker() {
           </div>
         )}
 
-        <Link href="/" className={styles.backLink}>
+        <Link href="/login" className={styles.backLink}>
           ← Back to Dashboard
         </Link>
       </div>

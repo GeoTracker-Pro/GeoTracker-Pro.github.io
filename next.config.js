@@ -1,12 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
+  // Removed 'output: export' to enable API routes for MongoDB integration
   trailingSlash: true,
   images: {
     unoptimized: true,
   },
-  // For GitHub Pages deployment, set this to your repo name
-  // e.g., '/GeoTracker' if hosted at https://username.github.io/GeoTracker
+  // For deployment, set this to your base path if needed
   basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
   assetPrefix: process.env.NEXT_PUBLIC_BASE_PATH || '',
 };
