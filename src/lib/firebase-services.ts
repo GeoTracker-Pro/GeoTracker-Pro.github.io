@@ -8,7 +8,6 @@ import {
   addDoc,
   updateDoc,
   deleteDoc,
-  arrayUnion,
   query,
   orderBy,
   Timestamp,
@@ -129,7 +128,7 @@ export async function getOrCreateTrackerInFirebase(trackingId: string, name: str
   }
 }
 
-// Add location to a tracker
+// Update the latest location for a tracker (replaces instead of appending)
 export async function addLocationToTrackerInFirebase(trackingId: string, location: LocationData): Promise<boolean> {
   try {
     // First ensure the tracker exists
@@ -140,12 +139,13 @@ export async function addLocationToTrackerInFirebase(trackingId: string, locatio
     }
     
     const trackerRef = doc(db, TRACKERS_COLLECTION, trackingId);
+    // Update with only the latest location instead of appending to array
     await updateDoc(trackerRef, {
-      locations: arrayUnion(location),
+      locations: [location],
     });
     return true;
   } catch (error) {
-    console.error('Error adding location:', error);
+    console.error('Error updating location:', error);
     return false;
   }
 }

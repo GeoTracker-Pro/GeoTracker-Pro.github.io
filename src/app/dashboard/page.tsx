@@ -188,7 +188,7 @@ export default function Dashboard() {
                 </div>
                 <div className={styles.trackerActions}>
                   <span className={styles.locationsCount}>
-                    {tracker.locations.length} coordinates
+                    {tracker.locations.length > 0 ? 'Latest location' : 'No location'}
                   </span>
                   <button
                     className={styles.deleteBtn}
@@ -203,7 +203,7 @@ export default function Dashboard() {
                   <strong>Initialized:</strong> {new Date(tracker.created).toLocaleString()}
                 </div>
                 <div className={styles.infoItem}>
-                  <strong>Last Signal:</strong>{' '}
+                  <strong>Latest Update:</strong>{' '}
                   {tracker.locations.length > 0
                     ? new Date(
                         tracker.locations[tracker.locations.length - 1].timestamp
