@@ -3,45 +3,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import {
+  Tracker,
+  getTrackers,
+  createTracker,
+  deleteTracker,
+} from '@/lib/storage';
 import styles from './page.module.css';
-
-interface DeviceInfo {
-  browser: string;
-  os: string;
-  platform: string;
-  screen: string;
-  userAgent: string;
-}
-
-interface LocationData {
-  latitude: number;
-  longitude: number;
-  accuracy: number;
-  timestamp: string;
-  deviceInfo?: DeviceInfo;
-  ip?: string;
-}
-
-interface Tracker {
-  _id: string;
-  trackerId: string;
-  name: string;
-  locations: LocationData[];
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-  createdBy?: {
-    name: string;
-    email: string;
-  };
-}
-
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
-}
 
 export default function Dashboard() {
   const router = useRouter();
@@ -50,93 +18,39 @@ export default function Dashboard() {
   const [generatedUrl, setGeneratedUrl] = useState('');
   const [expandedTracker, setExpandedTracker] = useState<string | null>(null);
   const [baseUrl, setBaseUrl] = useState('');
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
 
-  const getAuthHeaders = useCallback(() => {
-    const token = localStorage.getItem('auth_token');
-    return {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    };
+  const loadTrackers = useCallback(() => {
+    const storedTrackers = getTrackers();
+    setTrackers(storedTrackers);
   }, []);
 
-  const checkAuth = useCallback(async () => {
-    try {
-      const res = await fetch('/api/auth/me', {
-        headers: getAuthHeaders(),
-      });
-
-      if (!res.ok) {
-        router.push('/login');
-        return;
-      }
-
-      const data = await res.json();
-      setUser(data.user);
-    } catch {
+  useEffect(() => {
+    // Check if user is "authenticated" (for static deployment, just check localStorage)
+    const isAuth = localStorage.getItem('geotracker_authenticated');
+    if (!isAuth) {
       router.push('/login');
-    } finally {
-      setLoading(false);
+      return;
     }
-  }, [router, getAuthHeaders]);
 
-  const loadTrackers = useCallback(async () => {
-    try {
-      const res = await fetch('/api/trackers', {
-        headers: getAuthHeaders(),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setTrackers(data.trackers);
-      }
-    } catch (error) {
-      console.error('Failed to load trackers:', error);
-    }
-  }, [getAuthHeaders]);
-
-  useEffect(() => {
     setBaseUrl(window.location.origin + (process.env.NEXT_PUBLIC_BASE_PATH || ''));
-    checkAuth();
-  }, [checkAuth]);
+    loadTrackers();
+    
+    // Auto-refresh every 5 seconds
+    const interval = setInterval(loadTrackers, 5000);
+    return () => clearInterval(interval);
+  }, [router, loadTrackers]);
 
-  useEffect(() => {
-    if (user) {
-      loadTrackers();
-      // Auto-refresh every 10 seconds
-      const interval = setInterval(loadTrackers, 10000);
-      return () => clearInterval(interval);
-    }
-  }, [user, loadTrackers]);
-
-  const handleCreateTracker = async () => {
+  const handleCreateTracker = () => {
     if (!trackerName.trim()) {
       alert('Please enter a tracker name');
       return;
     }
 
-    try {
-      const res = await fetch('/api/trackers', {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ name: trackerName }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        const url = `${baseUrl}/track/?id=${data.tracker.trackerId}`;
-        setGeneratedUrl(url);
-        setTrackerName('');
-        loadTrackers();
-      } else {
-        const data = await res.json();
-        alert(data.error || 'Failed to create tracker');
-      }
-    } catch (error) {
-      console.error('Create tracker error:', error);
-      alert('Failed to create tracker');
-    }
+    const tracker = createTracker(trackerName);
+    const url = `${baseUrl}/track/?id=${tracker.id}`;
+    setGeneratedUrl(url);
+    setTrackerName('');
+    loadTrackers();
   };
 
   const handleCopyLink = () => {
@@ -145,38 +59,19 @@ export default function Dashboard() {
     });
   };
 
-  const handleDeleteTracker = async (trackerId: string, e: React.MouseEvent) => {
+  const handleDeleteTracker = (trackerId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (!confirm('Are you sure you want to delete this tracker?')) {
       return;
     }
 
-    try {
-      const res = await fetch(`/api/trackers/${trackerId}`, {
-        method: 'DELETE',
-        headers: getAuthHeaders(),
-      });
-
-      if (res.ok) {
-        loadTrackers();
-      } else {
-        const data = await res.json();
-        alert(data.error || 'Failed to delete tracker');
-      }
-    } catch (error) {
-      console.error('Delete tracker error:', error);
-      alert('Failed to delete tracker');
-    }
+    deleteTracker(trackerId);
+    loadTrackers();
   };
 
-  const handleLogout = async () => {
-    try {
-      await fetch('/api/auth/logout', { method: 'POST' });
-      localStorage.removeItem('auth_token');
-      router.push('/login');
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
+  const handleLogout = () => {
+    localStorage.removeItem('geotracker_authenticated');
+    router.push('/login');
   };
 
   const viewOnMap = (lat: number, lng: number, e: React.MouseEvent) => {
@@ -188,16 +83,6 @@ export default function Dashboard() {
     setExpandedTracker(expandedTracker === trackerId ? null : trackerId);
   };
 
-  if (loading) {
-    return (
-      <div className={styles.dashboardBg}>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-          <div className="spinner"></div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className={styles.dashboardBg}>
       <div className={styles.header}>
@@ -208,18 +93,13 @@ export default function Dashboard() {
           </div>
           <div className={styles.headerActions}>
             <span className={styles.userInfo}>
-              👤 {user?.name} ({user?.role})
+              📱 Static Mode (localStorage)
             </span>
-            {user?.role === 'admin' && (
-              <Link href="/users" className={styles.navLink}>
-                👥 Manage Users
-              </Link>
-            )}
             <Link href="/tracker" className={styles.navLink}>
               📍 Standalone Tracker
             </Link>
             <button onClick={handleLogout} className={styles.logoutBtn}>
-              🚪 Logout
+              🚪 Exit
             </button>
           </div>
         </div>
@@ -264,22 +144,16 @@ export default function Dashboard() {
         ) : (
           trackers.map((tracker) => (
             <div
-              key={tracker._id}
+              key={tracker.id}
               className={styles.trackerCard}
-              onClick={() => toggleTrackerDetails(tracker.trackerId)}
+              onClick={() => toggleTrackerDetails(tracker.id)}
             >
               <div className={styles.trackerHeader}>
                 <div>
                   <div className={styles.trackerName}>
                     {tracker.name}
-                    {!tracker.isActive && <span className={styles.inactiveTag}>Inactive</span>}
                   </div>
-                  <div className={styles.trackerId}>ID: {tracker.trackerId}</div>
-                  {tracker.createdBy && (
-                    <div className={styles.createdBy}>
-                      By: {tracker.createdBy.name}
-                    </div>
-                  )}
+                  <div className={styles.trackerId}>ID: {tracker.id}</div>
                 </div>
                 <div className={styles.trackerActions}>
                   <span className={styles.locationsCount}>
@@ -287,7 +161,7 @@ export default function Dashboard() {
                   </span>
                   <button
                     className={styles.deleteBtn}
-                    onClick={(e) => handleDeleteTracker(tracker.trackerId, e)}
+                    onClick={(e) => handleDeleteTracker(tracker.id, e)}
                   >
                     🗑️
                   </button>
@@ -295,7 +169,7 @@ export default function Dashboard() {
               </div>
               <div className={styles.trackerInfo}>
                 <div className={styles.infoItem}>
-                  <strong>Created:</strong> {new Date(tracker.createdAt).toLocaleString()}
+                  <strong>Created:</strong> {new Date(tracker.created).toLocaleString()}
                 </div>
                 <div className={styles.infoItem}>
                   <strong>Last Update:</strong>{' '}
@@ -307,7 +181,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {expandedTracker === tracker.trackerId && (
+              {expandedTracker === tracker.id && (
                 <div className={styles.trackerDetails}>
                   {tracker.locations.length > 0 ? (
                     tracker.locations.map((location, index) => (

@@ -9,6 +9,8 @@ import {
   getIPAddress,
   getCurrentPosition,
   getGeolocationErrorMessage,
+  getTracker,
+  addLocationToTracker,
 } from '@/lib/storage';
 import styles from './page.module.css';
 
@@ -37,41 +39,16 @@ function TrackerContent() {
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Send location to server API
-  const sendLocationToServer = useCallback(async (data: LocationData) => {
-    if (!trackingId) return;
+  // Save location to localStorage
+  const saveLocationToStorage = useCallback((data: LocationData) => {
+    if (!trackingId) return false;
 
-    try {
-      const res = await fetch('/api/location', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          trackerId: trackingId,
-          latitude: data.latitude,
-          longitude: data.longitude,
-          accuracy: data.accuracy,
-          timestamp: data.timestamp,
-          deviceInfo: data.deviceInfo,
-          ip: data.ip,
-        }),
-      });
-
-      if (!res.ok) {
-        const result = await res.json();
-        if (res.status === 404) {
-          setTrackerExists(false);
-        }
-        console.error('Failed to send location:', result.error);
-        return false;
-      }
-
+    const success = addLocationToTracker(trackingId, data);
+    if (success) {
       setUpdateCount((prev) => prev + 1);
       setLastUpdate(new Date());
-      return true;
-    } catch (error) {
-      console.error('Failed to send location to server:', error);
-      return false;
     }
+    return success;
   }, [trackingId]);
 
   const fetchLocation = useCallback(async (isAutoUpdate = false) => {
@@ -100,9 +77,9 @@ function TrackerContent() {
       setStatus('success');
       setStatusMessage('Location captured successfully!');
 
-      // Send to MongoDB API
-      if (trackingId) {
-        await sendLocationToServer(data);
+      // Save to localStorage
+      if (trackingId && trackerExists) {
+        saveLocationToStorage(data);
       }
     } catch (error) {
       if (error instanceof GeolocationPositionError) {
@@ -114,19 +91,15 @@ function TrackerContent() {
       }
       setStatus('error');
     }
-  }, [trackingId, sendLocationToServer]);
+  }, [trackingId, trackerExists, saveLocationToStorage]);
 
-  // Check if tracker exists on server
-  const checkTrackerExists = useCallback(async () => {
+  // Check if tracker exists in localStorage
+  const checkTrackerExists = useCallback(() => {
     if (!trackingId) return;
 
-    try {
-      const res = await fetch(`/api/trackers/${trackingId}`);
-      if (!res.ok) {
-        setTrackerExists(false);
-      }
-    } catch {
-      console.error('Failed to check tracker');
+    const tracker = getTracker(trackingId);
+    if (!tracker) {
+      setTrackerExists(false);
     }
   }, [trackingId]);
 
@@ -135,7 +108,7 @@ function TrackerContent() {
     setDeviceInfo(device);
     getIPAddress().then(setIpAddress);
 
-    // Check if tracker exists on server
+    // Check if tracker exists in localStorage
     if (trackingId) {
       checkTrackerExists();
     }
@@ -190,7 +163,7 @@ function TrackerContent() {
             <span>Auto-updating every 15 seconds</span>
             {updateCount > 0 && (
               <span className={styles.updateCount}>
-                ({updateCount} updates sent)
+                ({updateCount} updates saved)
               </span>
             )}
             {lastUpdate && (

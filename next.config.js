@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Removed 'output: export' to enable API routes for MongoDB integration
+  // Enable static export for GitHub Pages deployment
+  output: 'export',
   trailingSlash: true,
   images: {
     unoptimized: true,
