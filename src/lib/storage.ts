@@ -229,23 +229,24 @@ export function getDeviceInfo(): DeviceInfo {
 
   const userAgent = navigator.userAgent;
 
-  // Detect browser - Check Safari before Chrome since Chrome is in Safari's UA
+  // Detect browser - Check in order of specificity to avoid false positives
   let browser = 'Unknown';
   if (userAgent.indexOf('Firefox') > -1 && userAgent.indexOf('Seamonkey') === -1) {
     browser = 'Firefox';
-  } else if (userAgent.indexOf('Edge') > -1 || userAgent.indexOf('Edg') > -1) {
+  } else if (userAgent.indexOf('Edg') > -1) {
+    // Modern Edge (Chromium-based)
     browser = 'Edge';
-  } else if (userAgent.indexOf('Chrome') > -1 && userAgent.indexOf('Edg') === -1 && userAgent.indexOf('OPR') === -1) {
-    // Check if it's actually Chrome and not Safari or other browsers
-    if (userAgent.indexOf('Safari') > -1 && userAgent.indexOf('CriOS') === -1 && userAgent.indexOf('Chrome') === -1) {
-      browser = 'Safari';
-    } else {
-      browser = 'Chrome';
-    }
-  } else if (userAgent.indexOf('Safari') > -1 && userAgent.indexOf('Chrome') === -1) {
-    browser = 'Safari';
-  } else if (userAgent.indexOf('Opera') > -1 || userAgent.indexOf('OPR') > -1) {
+  } else if (userAgent.indexOf('OPR') > -1 || userAgent.indexOf('Opera') > -1) {
     browser = 'Opera';
+  } else if (userAgent.indexOf('Chrome') > -1 && userAgent.indexOf('Safari') > -1) {
+    // Chrome includes both "Chrome" and "Safari" in UA
+    browser = 'Chrome';
+  } else if (userAgent.indexOf('Safari') > -1) {
+    // Safari only has "Safari" but not "Chrome"
+    browser = 'Safari';
+  } else if (userAgent.indexOf('Edge') > -1) {
+    // Legacy Edge
+    browser = 'Edge';
   }
 
   // Detect OS - Check more specific patterns first
