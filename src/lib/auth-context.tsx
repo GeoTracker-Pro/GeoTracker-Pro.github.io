@@ -9,6 +9,8 @@ import {
   signInAnonymously,
   signOut,
   updateProfile,
+  browserSessionPersistence,
+  setPersistence,
 } from 'firebase/auth';
 import { auth } from './firebase';
 import { createOrUpdateUser } from './firebase-services';
@@ -33,6 +35,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
+      // Set session persistence - user stays signed in until browser window is closed
+      setPersistence(auth, browserSessionPersistence).catch((err) => {
+        console.error('Error setting auth persistence:', err);
+      });
+
       const unsubscribe = onAuthStateChanged(auth, (user) => {
         setUser(user);
         setLoading(false);
