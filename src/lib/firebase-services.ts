@@ -9,6 +9,7 @@ import {
   updateDoc,
   deleteDoc,
   query,
+  where,
   orderBy,
   Timestamp,
   serverTimestamp,
@@ -38,11 +39,16 @@ function timestampToString(timestamp: Timestamp | string | undefined): string {
 
 // === TRACKER OPERATIONS ===
 
-// Get all trackers
-export async function getTrackersFromFirebase(): Promise<Tracker[]> {
+// Get all trackers for a specific user
+export async function getTrackersFromFirebase(userId?: string): Promise<Tracker[]> {
   try {
     const trackersRef = collection(db, TRACKERS_COLLECTION);
-    const q = query(trackersRef, orderBy('created', 'desc'));
+    let q;
+    if (userId) {
+      q = query(trackersRef, where('userId', '==', userId), orderBy('created', 'desc'));
+    } else {
+      q = query(trackersRef, orderBy('created', 'desc'));
+    }
     const snapshot = await getDocs(q);
     
     return snapshot.docs.map((doc) => {
@@ -52,6 +58,7 @@ export async function getTrackersFromFirebase(): Promise<Tracker[]> {
         name: data.name || 'Unnamed Tracker',
         created: timestampToString(data.created),
         locations: data.locations || [],
+        userId: data.userId || null,
       } as Tracker;
     });
   } catch (error) {
@@ -71,11 +78,15 @@ export async function getTrackerFromFirebase(trackingId: string): Promise<Tracke
     }
     
     const data = snapshot.data();
+    if (!data.userId) {
+      console.warn(`Tracker ${trackingId} has no userId - may be a legacy tracker`);
+    }
     return {
       id: snapshot.id,
       name: data.name || 'Unnamed Tracker',
       created: timestampToString(data.created),
       locations: data.locations || [],
+      userId: data.userId || null,
     } as Tracker;
   } catch (error) {
     console.error('Error getting tracker:', error);
@@ -84,13 +95,17 @@ export async function getTrackerFromFirebase(trackingId: string): Promise<Tracke
 }
 
 // Create a new tracker
-export async function createTrackerInFirebase(name: string, customId?: string): Promise<Tracker | null> {
+export async function createTrackerInFirebase(name: string, customId?: string, userId?: string): Promise<Tracker | null> {
   try {
-    const trackerData = {
+    const trackerData: Record<string, unknown> = {
       name: name || 'Unnamed Tracker',
       created: serverTimestamp(),
       locations: [],
     };
+    
+    if (userId) {
+      trackerData.userId = userId;
+    }
     
     let docRef;
     if (customId) {
@@ -107,6 +122,7 @@ export async function createTrackerInFirebase(name: string, customId?: string): 
       name: name || 'Unnamed Tracker',
       created: new Date().toISOString(),
       locations: [],
+      userId: userId || null,
     };
   } catch (error) {
     console.error('Error creating tracker:', error);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { getFirebaseErrorMessage } from '@/lib/firebase-errors';
@@ -8,13 +8,20 @@ import styles from './page.module.css';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { signIn, signUp, signInAsGuest, error: authError } = useAuth();
+  const { user, loading: authLoading, signIn, signUp, signInAsGuest, error: authError } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Redirect to dashboard if already signed in
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.push('/dashboard');
+    }
+  }, [user, authLoading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

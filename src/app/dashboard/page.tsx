@@ -23,15 +23,16 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   const loadTrackers = useCallback(async () => {
+    if (!user) return;
     try {
-      const storedTrackers = await getTrackersAsync();
+      const storedTrackers = await getTrackersAsync(user.uid);
       setTrackers(storedTrackers);
     } catch (error) {
       console.error('Error loading trackers:', error);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     // Check if user is authenticated
@@ -56,7 +57,12 @@ export default function Dashboard() {
       return;
     }
 
-    const tracker = await createTrackerAsync(trackerName);
+    if (!user) {
+      alert('You must be signed in to create a tracker.');
+      return;
+    }
+
+    const tracker = await createTrackerAsync(trackerName, user.uid);
     if (tracker) {
       const url = `${baseUrl}/track?id=${tracker.id}`;
       setGeneratedUrl(url);

@@ -32,6 +32,7 @@ export interface Tracker {
   name: string;
   created: string;
   locations: LocationData[];
+  userId?: string | null;
 }
 
 const STORAGE_KEY = 'geotracker_data';
@@ -49,10 +50,10 @@ export function generateTrackingId(): string {
 // Firebase-based async functions (primary)
 // ==========================================
 
-// Get all trackers from Firebase
-export async function getTrackersAsync(): Promise<Tracker[]> {
+// Get all trackers from Firebase (filtered by userId if provided)
+export async function getTrackersAsync(userId?: string): Promise<Tracker[]> {
   try {
-    return await getTrackersFromFirebase();
+    return await getTrackersFromFirebase(userId);
   } catch (error) {
     console.error('Firebase error, falling back to localStorage:', error);
     return getTrackers();
@@ -70,10 +71,10 @@ export async function getTrackerAsync(trackingId: string): Promise<Tracker | nul
 }
 
 // Create a new tracker in Firebase
-export async function createTrackerAsync(name: string): Promise<Tracker | null> {
+export async function createTrackerAsync(name: string, userId?: string): Promise<Tracker | null> {
   const trackerId = generateTrackingId();
   try {
-    const tracker = await createTrackerInFirebase(name, trackerId);
+    const tracker = await createTrackerInFirebase(name, trackerId, userId);
     return tracker;
   } catch (error) {
     console.error('Firebase error, falling back to localStorage:', error);
