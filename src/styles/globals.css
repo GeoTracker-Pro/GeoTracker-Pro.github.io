@@ -299,3 +299,34 @@ body {
   font-weight: 500;
   font-size: 14px;
 }
+
+/* Mobile responsive improvements */
+@media (max-width: 768px) {
+  .container {
+    padding: 25px 20px;
+    max-width: 95%;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .map-container {
+    height: 300px;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 12px 20px;
+  }
+
+  .device-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+
+  .device-value {
+    font-size: 13px;
+  }
+}

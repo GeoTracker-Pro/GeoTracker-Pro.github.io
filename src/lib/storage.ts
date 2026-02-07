@@ -229,25 +229,38 @@ export function getDeviceInfo(): DeviceInfo {
 
   const userAgent = navigator.userAgent;
 
-  // Detect browser
+  // Detect browser - Check Safari before Chrome since Chrome is in Safari's UA
   let browser = 'Unknown';
-  if (userAgent.indexOf('Firefox') > -1) {
+  if (userAgent.indexOf('Firefox') > -1 && userAgent.indexOf('Seamonkey') === -1) {
     browser = 'Firefox';
-  } else if (userAgent.indexOf('Chrome') > -1) {
-    browser = 'Chrome';
-  } else if (userAgent.indexOf('Safari') > -1) {
-    browser = 'Safari';
-  } else if (userAgent.indexOf('Edge') > -1) {
+  } else if (userAgent.indexOf('Edge') > -1 || userAgent.indexOf('Edg') > -1) {
     browser = 'Edge';
+  } else if (userAgent.indexOf('Chrome') > -1 && userAgent.indexOf('Edg') === -1 && userAgent.indexOf('OPR') === -1) {
+    // Check if it's actually Chrome and not Safari or other browsers
+    if (userAgent.indexOf('Safari') > -1 && userAgent.indexOf('CriOS') === -1 && userAgent.indexOf('Chrome') === -1) {
+      browser = 'Safari';
+    } else {
+      browser = 'Chrome';
+    }
+  } else if (userAgent.indexOf('Safari') > -1 && userAgent.indexOf('Chrome') === -1) {
+    browser = 'Safari';
+  } else if (userAgent.indexOf('Opera') > -1 || userAgent.indexOf('OPR') > -1) {
+    browser = 'Opera';
   }
 
-  // Detect OS
+  // Detect OS - Check more specific patterns first
   let os = 'Unknown';
-  if (userAgent.indexOf('Win') > -1) os = 'Windows';
-  else if (userAgent.indexOf('Mac') > -1) os = 'MacOS';
-  else if (userAgent.indexOf('Linux') > -1) os = 'Linux';
-  else if (userAgent.indexOf('Android') > -1) os = 'Android';
-  else if (userAgent.indexOf('iOS') > -1 || userAgent.indexOf('iPhone') > -1) os = 'iOS';
+  if (userAgent.indexOf('iPhone') > -1 || userAgent.indexOf('iPad') > -1 || userAgent.indexOf('iPod') > -1) {
+    os = 'iOS';
+  } else if (userAgent.indexOf('Android') > -1) {
+    os = 'Android';
+  } else if (userAgent.indexOf('Win') > -1) {
+    os = 'Windows';
+  } else if (userAgent.indexOf('Mac') > -1) {
+    os = 'MacOS';
+  } else if (userAgent.indexOf('Linux') > -1) {
+    os = 'Linux';
+  }
 
   return {
     browser,
@@ -277,10 +290,11 @@ export function getCurrentPosition(): Promise<GeolocationPosition> {
       return;
     }
 
+    // Use longer timeout and less aggressive settings for better mobile compatibility
     navigator.geolocation.getCurrentPosition(resolve, reject, {
       enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 0,
+      timeout: 30000, // Increased to 30 seconds for slower devices/networks
+      maximumAge: 5000, // Allow cached position up to 5 seconds old
     });
   });
 }

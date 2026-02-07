@@ -2,7 +2,7 @@
   background-image: url('https://res.cloudinary.com/dkj22lm1g/image/upload/v1770367388/map-image_adwbuo.png');
   background-size: cover;
   background-position: center;
-  background-attachment: fixed;
+  background-repeat: no-repeat;
   min-height: 100vh;
   display: flex;
   justify-content: center;
@@ -11,9 +11,16 @@
   position: relative;
 }
 
+/* Use fixed background only on desktop devices */
+@media (min-width: 768px) {
+  .gradientBg {
+    background-attachment: fixed;
+  }
+}
+
 .gradientBg::before {
   content: '';
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   right: 0;
@@ -70,4 +77,21 @@
 .backLink:hover {
   color: #00ff88;
   text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .container {
+    padding: 25px 20px;
+    max-width: 95%;
+  }
+
+  .container h1 {
+    font-size: 18px;
+    letter-spacing: 2px;
+  }
+
+  .subtitle {
+    font-size: 12px;
+  }
 }
