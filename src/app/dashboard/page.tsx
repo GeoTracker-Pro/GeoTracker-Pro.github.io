@@ -42,7 +42,7 @@ export default function Dashboard() {
 
   const handleCreateTracker = () => {
     if (!trackerName.trim()) {
-      alert('Please enter a tracker name');
+      alert('Please enter a tracker designation');
       return;
     }
 
@@ -55,13 +55,13 @@ export default function Dashboard() {
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(generatedUrl).then(() => {
-      alert('Link copied to clipboard!');
+      alert('Tracking link copied to clipboard!');
     });
   };
 
   const handleDeleteTracker = (trackerId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm('Are you sure you want to delete this tracker?')) {
+    if (!confirm('Are you sure you want to terminate this tracking session?')) {
       return;
     }
 
@@ -88,58 +88,58 @@ export default function Dashboard() {
       <div className={styles.header}>
         <div className={styles.headerContent}>
           <div>
-            <h1>📍 GeoTracker Dashboard</h1>
-            <p className={styles.subtitle}>Create and manage location tracking links</p>
+            <h1>🎯 Command Center</h1>
+            <p className={styles.subtitle}>Surveillance operations dashboard</p>
           </div>
           <div className={styles.headerActions}>
             <span className={styles.userInfo}>
-              📱 Static Mode (localStorage)
+              🔒 Secure Mode
             </span>
             <Link href="/tracker" className={styles.navLink}>
-              📍 Standalone Tracker
+              📡 Quick Track
             </Link>
             <button onClick={handleLogout} className={styles.logoutBtn}>
-              🚪 Exit
+              ⏻ Disconnect
             </button>
           </div>
         </div>
       </div>
 
       <div className={styles.createTracker}>
-        <h2>Create New Tracker</h2>
+        <h2>Initialize New Tracker</h2>
         <div className={styles.formGroup}>
-          <label htmlFor="trackerName">Tracker Name</label>
+          <label htmlFor="trackerName">Tracker Designation</label>
           <input
             type="text"
             id="trackerName"
             value={trackerName}
             onChange={(e) => setTrackerName(e.target.value)}
-            placeholder="e.g., Family Trip, Lost Phone, Delivery Tracking"
+            placeholder="e.g., Operation Alpha, Asset Monitor, Field Unit"
             className={styles.input}
           />
         </div>
         <button className="btn" onClick={handleCreateTracker}>
-          Create Tracking Link
+          Generate Tracking Link
         </button>
 
         {generatedUrl && (
           <div className={styles.generatedLink}>
-            <h3>✓ Tracking Link Created!</h3>
-            <p>Share this link to track location (updates every 15 seconds):</p>
+            <h3>✓ Tracking Link Generated</h3>
+            <p>Share this secure link to begin surveillance (auto-updates every 15s):</p>
             <div className={styles.linkText}>{generatedUrl}</div>
             <button className="btn btn-secondary" onClick={handleCopyLink}>
-              Copy Link
+              📋 Copy Link
             </button>
           </div>
         )}
       </div>
 
       <div className={styles.trackersList}>
-        <h2>Active Trackers ({trackers.length})</h2>
+        <h2>Active Sessions ({trackers.length})</h2>
         {trackers.length === 0 ? (
           <div className={styles.emptyState}>
-            <div className={styles.emptyStateIcon}>📭</div>
-            <p>No trackers yet. Create your first one above!</p>
+            <div className={styles.emptyStateIcon}>📡</div>
+            <p>No active tracking sessions. Initialize your first tracker above.</p>
           </div>
         ) : (
           trackers.map((tracker) => (
@@ -157,27 +157,27 @@ export default function Dashboard() {
                 </div>
                 <div className={styles.trackerActions}>
                   <span className={styles.locationsCount}>
-                    {tracker.locations.length} locations
+                    {tracker.locations.length} coordinates
                   </span>
                   <button
                     className={styles.deleteBtn}
                     onClick={(e) => handleDeleteTracker(tracker.id, e)}
                   >
-                    🗑️
+                    ✕
                   </button>
                 </div>
               </div>
               <div className={styles.trackerInfo}>
                 <div className={styles.infoItem}>
-                  <strong>Created:</strong> {new Date(tracker.created).toLocaleString()}
+                  <strong>Initialized:</strong> {new Date(tracker.created).toLocaleString()}
                 </div>
                 <div className={styles.infoItem}>
-                  <strong>Last Update:</strong>{' '}
+                  <strong>Last Signal:</strong>{' '}
                   {tracker.locations.length > 0
                     ? new Date(
                         tracker.locations[tracker.locations.length - 1].timestamp
                       ).toLocaleString()
-                    : 'Never'}
+                    : 'Awaiting...'}
                 </div>
               </div>
 
@@ -187,7 +187,7 @@ export default function Dashboard() {
                     tracker.locations.map((location, index) => (
                       <div key={index} className={styles.locationEntry}>
                         <div className={styles.locationTime}>
-                          📅 {new Date(location.timestamp).toLocaleString()}
+                          ⏱ {new Date(location.timestamp).toLocaleString()}
                         </div>
                         <div className={styles.locationCoords}>
                           <div className={styles.coordItem}>
@@ -244,7 +244,7 @@ export default function Dashboard() {
                       </div>
                     ))
                   ) : (
-                    <p style={{ color: '#666' }}>No locations recorded yet.</p>
+                    <p style={{ color: '#666' }}>No location data received yet. Share the tracking link to begin receiving coordinates.</p>
                   )}
                 </div>
               )}

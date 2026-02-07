@@ -1,16 +1,39 @@
 .pageContainer {
-  background: #f5f7fa;
+  background-image: url('https://res.cloudinary.com/dkj22lm1g/image/upload/v1770367388/map-image_adwbuo.png');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
   min-height: 100vh;
   padding: 20px;
+  position: relative;
+}
+
+.pageContainer::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(5, 5, 16, 0.95) 0%, rgba(10, 10, 26, 0.92) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.pageContainer > * {
+  position: relative;
+  z-index: 1;
 }
 
 .header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: rgba(10, 10, 26, 0.9);
   color: white;
   padding: 20px 30px;
-  border-radius: 15px;
+  border-radius: 8px;
   margin-bottom: 30px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 30px rgba(0, 255, 136, 0.2);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  backdrop-filter: blur(10px);
 }
 
 .headerContent {
@@ -22,13 +45,20 @@
 }
 
 .header h1 {
-  font-size: 28px;
+  font-size: 24px;
   margin-bottom: 5px;
+  font-family: 'Orbitron', sans-serif;
+  color: #00ff88;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
 }
 
 .subtitle {
-  opacity: 0.9;
-  font-size: 14px;
+  opacity: 0.8;
+  font-size: 13px;
+  color: #888;
+  letter-spacing: 1px;
 }
 
 .headerActions {
@@ -39,46 +69,56 @@
 }
 
 .userInfo {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(0, 255, 136, 0.1);
   padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 14px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #00ff88;
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  font-family: 'Share Tech Mono', monospace;
 }
 
 .navLink {
-  color: white;
+  color: #00ccff;
   text-decoration: none;
-  font-size: 14px;
+  font-size: 12px;
   padding: 8px 16px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
+  background: rgba(0, 204, 255, 0.1);
+  border: 1px solid rgba(0, 204, 255, 0.3);
+  border-radius: 4px;
   transition: all 0.3s;
+  font-family: 'Share Tech Mono', monospace;
 }
 
 .navLink:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(0, 204, 255, 0.2);
+  box-shadow: 0 0 15px rgba(0, 204, 255, 0.3);
 }
 
 .logoutBtn {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: none;
+  background: rgba(255, 51, 102, 0.1);
+  color: #ff3366;
+  border: 1px solid rgba(255, 51, 102, 0.3);
   padding: 8px 16px;
-  border-radius: 20px;
+  border-radius: 4px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 12px;
   transition: all 0.3s;
+  font-family: 'Share Tech Mono', monospace;
 }
 
 .logoutBtn:hover {
-  background: rgba(255, 0, 0, 0.3);
+  background: rgba(255, 51, 102, 0.2);
+  box-shadow: 0 0 15px rgba(255, 51, 102, 0.3);
 }
 
 .content {
-  background: white;
+  background: rgba(10, 10, 26, 0.9);
   padding: 30px;
-  border-radius: 15px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(0, 255, 136, 0.2);
+  backdrop-filter: blur(10px);
 }
 
 .toolbar {
@@ -98,51 +138,58 @@
 .usersTable td {
   padding: 15px;
   text-align: left;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid rgba(0, 255, 136, 0.1);
 }
 
 .usersTable th {
-  background: #f8f9fa;
-  color: #333;
+  background: rgba(0, 255, 136, 0.05);
+  color: #00ff88;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 12px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 2px;
+  font-family: 'Orbitron', sans-serif;
 }
 
 .usersTable td {
-  color: #333;
+  color: #e0e0e0;
 }
 
 .usersTable tr:hover {
-  background: #f8f9fa;
+  background: rgba(0, 255, 136, 0.03);
 }
 
 .youTag {
-  background: #667eea;
-  color: white;
+  background: #00ccff;
+  color: #0a0a1a;
   font-size: 10px;
   padding: 2px 8px;
-  border-radius: 10px;
+  border-radius: 4px;
   margin-left: 8px;
-  font-weight: normal;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .roleTag {
   padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
+  border-radius: 4px;
+  font-size: 11px;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .roleTag.admin {
-  background: #e7f3ff;
-  color: #0066cc;
+  background: rgba(0, 255, 136, 0.1);
+  color: #00ff88;
+  border: 1px solid rgba(0, 255, 136, 0.3);
 }
 
 .roleTag.user {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: rgba(0, 204, 255, 0.1);
+  color: #00ccff;
+  border: 1px solid rgba(0, 204, 255, 0.3);
 }
 
 .editBtn,
@@ -152,22 +199,34 @@
   cursor: pointer;
   font-size: 18px;
   padding: 5px 10px;
-  border-radius: 5px;
-  transition: background 0.2s;
+  border-radius: 4px;
+  transition: all 0.3s;
+}
+
+.editBtn {
+  border: 1px solid rgba(0, 204, 255, 0.3);
+  color: #00ccff;
 }
 
 .editBtn:hover {
-  background: rgba(102, 126, 234, 0.1);
+  background: rgba(0, 204, 255, 0.1);
+  box-shadow: 0 0 10px rgba(0, 204, 255, 0.3);
+}
+
+.deleteBtn {
+  border: 1px solid rgba(255, 51, 102, 0.3);
+  color: #ff3366;
 }
 
 .deleteBtn:hover {
-  background: rgba(255, 0, 0, 0.1);
+  background: rgba(255, 51, 102, 0.1);
+  box-shadow: 0 0 10px rgba(255, 51, 102, 0.3);
 }
 
 .emptyState {
   text-align: center;
   padding: 40px;
-  color: #666;
+  color: #888;
 }
 
 .modalOverlay {
@@ -176,26 +235,32 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   padding: 20px;
+  backdrop-filter: blur(5px);
 }
 
 .modal {
-  background: white;
-  border-radius: 15px;
+  background: rgba(10, 10, 26, 0.98);
+  border-radius: 8px;
   padding: 30px;
   max-width: 500px;
   width: 100%;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 40px rgba(0, 255, 136, 0.3);
+  border: 1px solid rgba(0, 255, 136, 0.3);
 }
 
 .modal h2 {
-  color: #333;
+  color: #00ff88;
   margin-bottom: 20px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 18px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
 }
 
 .formGroup {
@@ -204,24 +269,30 @@
 
 .formGroup label {
   display: block;
-  color: #666;
+  color: #888;
   margin-bottom: 8px;
   font-weight: 500;
-  font-size: 14px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .input {
   width: 100%;
   padding: 12px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
-  transition: border-color 0.3s;
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  border-radius: 4px;
+  font-size: 14px;
+  transition: all 0.3s;
+  background: rgba(0, 0, 0, 0.5);
+  color: #e0e0e0;
+  font-family: 'Share Tech Mono', monospace;
 }
 
 .input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #00ff88;
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
 }
 
 .modalActions {

@@ -21,15 +21,15 @@ export default function UsersPage() {
       <div className={styles.header}>
         <div className={styles.headerContent}>
           <div>
-            <h1>👥 User Management</h1>
-            <p className={styles.subtitle}>User management feature</p>
+            <h1>👥 User Registry</h1>
+            <p className={styles.subtitle}>Personnel management module</p>
           </div>
           <div className={styles.headerActions}>
             <span className={styles.userInfo}>
-              📱 Static Mode
+              🔒 Secure Mode
             </span>
             <Link href="/dashboard" className={styles.navLink}>
-              📍 Dashboard
+              🎯 Command Center
             </Link>
           </div>
         </div>
@@ -37,13 +37,13 @@ export default function UsersPage() {
 
       <div className={styles.content}>
         <div className={styles.emptyState}>
-          <p>⚠️ User management requires a server backend.</p>
+          <p>⚠️ User management requires server backend.</p>
           <p style={{ marginTop: '10px', color: '#666' }}>
             This static deployment uses localStorage for data storage.
-            User management features are not available in static mode.
+            Multi-user management features are not available in this mode.
           </p>
           <Link href="/dashboard" className="btn" style={{ marginTop: '20px', display: 'inline-block' }}>
-            ← Return to Dashboard
+            ← Return to Command Center
           </Link>
         </div>
       </div>

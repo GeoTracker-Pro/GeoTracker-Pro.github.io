@@ -75,10 +75,35 @@ export function createTracker(name: string): Tracker {
   return tracker;
 }
 
+// Create a tracker with a specific ID (for shared links)
+export function createTrackerWithId(trackingId: string, name: string = 'Shared Tracker'): Tracker {
+  const tracker: Tracker = {
+    id: trackingId,
+    name: name,
+    created: new Date().toISOString(),
+    locations: [],
+  };
+
+  const trackers = getTrackers();
+  trackers.push(tracker);
+  saveTrackers(trackers);
+
+  return tracker;
+}
+
 // Get a specific tracker by ID
 export function getTracker(trackingId: string): Tracker | undefined {
   const trackers = getTrackers();
   return trackers.find(t => t.id === trackingId);
+}
+
+// Get or create a tracker by ID (for shared links)
+export function getOrCreateTracker(trackingId: string): Tracker {
+  let tracker = getTracker(trackingId);
+  if (!tracker) {
+    tracker = createTrackerWithId(trackingId);
+  }
+  return tracker;
 }
 
 // Add location to a tracker
