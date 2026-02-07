@@ -1,31 +1,56 @@
 .gradientBg {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-image: url('https://res.cloudinary.com/dkj22lm1g/image/upload/v1770367388/map-image_adwbuo.png');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 20px;
+  position: relative;
+}
+
+.gradientBg::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(5, 5, 16, 0.95) 0%, rgba(10, 10, 26, 0.92) 100%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .container {
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  max-width: 600px;
+  background: rgba(10, 10, 26, 0.95);
+  border-radius: 8px;
+  box-shadow: 0 0 40px rgba(0, 255, 136, 0.2), inset 0 0 60px rgba(0, 255, 136, 0.02);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  max-width: 650px;
   width: 100%;
   padding: 40px;
+  position: relative;
+  z-index: 1;
+  backdrop-filter: blur(10px);
 }
 
 .container h1 {
-  color: #333;
+  color: #00ff88;
   margin-bottom: 10px;
-  font-size: 28px;
+  font-size: 22px;
+  font-family: 'Orbitron', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
 }
 
 .subtitle {
-  color: #666;
+  color: #888;
   margin-bottom: 30px;
-  font-size: 14px;
+  font-size: 13px;
+  letter-spacing: 1px;
 }
 
 .locationInfo {
@@ -35,21 +60,22 @@
 .backLink {
   display: inline-block;
   margin-top: 20px;
-  color: #667eea;
+  color: #00ccff;
   text-decoration: none;
-  font-size: 14px;
-  transition: color 0.3s;
+  font-size: 13px;
+  transition: all 0.3s;
+  padding: 8px 0;
 }
 
 .backLink:hover {
-  color: #764ba2;
-  text-decoration: underline;
+  color: #00ff88;
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
 }
 
 .dashboardLink {
   display: inline-block;
   margin-top: 10px;
-  color: #721c24;
+  color: #ff3366;
   text-decoration: underline;
 }
 
@@ -57,43 +83,64 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background: #e8f5e9;
-  border: 1px solid #c8e6c9;
+  background: rgba(0, 255, 136, 0.1);
+  border: 1px solid rgba(0, 255, 136, 0.3);
   padding: 12px 16px;
-  border-radius: 8px;
+  border-radius: 4px;
   margin-bottom: 15px;
-  font-size: 14px;
-  color: #2e7d32;
+  font-size: 13px;
+  color: #00ff88;
   flex-wrap: wrap;
 }
 
 .pulse {
   width: 10px;
   height: 10px;
-  background: #4caf50;
+  background: #00ff88;
   border-radius: 50%;
   animation: pulse 1.5s infinite;
+  box-shadow: 0 0 10px #00ff88;
 }
 
 @keyframes pulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+    box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7);
   }
   70% {
-    box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+    box-shadow: 0 0 0 10px rgba(0, 255, 136, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+    box-shadow: 0 0 0 0 rgba(0, 255, 136, 0);
   }
 }
 
 .updateCount {
-  color: #388e3c;
+  color: #00ff88;
   font-weight: 600;
+  font-family: 'Share Tech Mono', monospace;
 }
 
 .lastUpdate {
   color: #666;
-  font-size: 12px;
+  font-size: 11px;
   margin-left: auto;
+}
+
+.trackerInfo {
+  background: rgba(0, 204, 255, 0.1);
+  border: 1px solid rgba(0, 204, 255, 0.3);
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.trackerInfo p {
+  color: #00ccff;
+  font-size: 13px;
+  margin: 5px 0;
+}
+
+.trackerInfo strong {
+  color: #00ff88;
 }

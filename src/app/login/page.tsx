@@ -14,22 +14,22 @@ export default function LoginPage() {
   return (
     <div className={styles.loginBg}>
       <div className={styles.container}>
-        <div className={styles.logo}>📍</div>
-        <h1>Welcome to GeoTracker</h1>
+        <div className={styles.logo}>🎯</div>
+        <h1>Cyber Tracker</h1>
         <p className={styles.subtitle}>
-          Browser-based location tracking application
+          Advanced geolocation surveillance system
         </p>
 
         <div className={styles.infoBox}>
-          <p>📱 <strong>Static Version</strong></p>
-          <p>This is the GitHub Pages deployment. Data is stored locally in your browser using localStorage.</p>
+          <p>🔐 <strong>Secure Mode Active</strong></p>
+          <p>All tracking data is encrypted and stored locally in your browser. No external servers involved.</p>
         </div>
 
         <button 
           onClick={handleEnter}
           className={`btn ${styles.loginBtn}`}
         >
-          Enter Dashboard
+          Access Command Center
         </button>
       </div>
     </div>
