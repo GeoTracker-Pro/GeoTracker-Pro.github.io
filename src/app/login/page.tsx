@@ -2,45 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AuthError } from 'firebase/auth';
 import { useAuth } from '@/lib/auth-context';
+import { getFirebaseErrorMessage } from '@/lib/firebase-errors';
 import styles from './page.module.css';
-
-// Get user-friendly error message from Firebase auth error codes
-function getAuthErrorMessage(error: unknown): string {
-  if (error instanceof Error && 'code' in error) {
-    const authError = error as AuthError;
-    switch (authError.code) {
-      case 'auth/configuration-not-found':
-        return 'Firebase Authentication is not configured. Please enable Authentication in Firebase Console.';
-      case 'auth/operation-not-allowed':
-        return 'This sign-in method is not enabled. Please enable it in Firebase Console (Authentication > Sign-in method).';
-      case 'auth/user-not-found':
-        return 'No account found with this email address.';
-      case 'auth/wrong-password':
-        return 'Incorrect password. Please try again.';
-      case 'auth/invalid-credential':
-        return 'Invalid email or password. Please check your credentials.';
-      case 'auth/email-already-in-use':
-        return 'An account with this email already exists.';
-      case 'auth/weak-password':
-        return 'Password must be at least 6 characters.';
-      case 'auth/invalid-email':
-        return 'Please enter a valid email address.';
-      case 'auth/too-many-requests':
-        return 'Too many failed attempts. Please try again later.';
-      case 'auth/network-request-failed':
-        return 'Network error. Please check your connection.';
-      case 'auth/invalid-api-key':
-        return 'Invalid Firebase API key. Please check Firebase configuration.';
-      case 'auth/app-not-authorized':
-        return 'This app is not authorized to use Firebase Authentication.';
-      default:
-        return authError.message || 'Authentication failed. Please try again.';
-    }
-  }
-  return error instanceof Error ? error.message : 'Authentication failed. Please try again.';
-}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -65,7 +29,7 @@ export default function LoginPage() {
       }
       router.push('/dashboard');
     } catch (err) {
-      setError(getAuthErrorMessage(err));
+      setError(getFirebaseErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -79,7 +43,7 @@ export default function LoginPage() {
       await signInAsGuest();
       router.push('/dashboard');
     } catch (err) {
-      setError(getAuthErrorMessage(err));
+      setError(getFirebaseErrorMessage(err));
     } finally {
       setLoading(false);
     }

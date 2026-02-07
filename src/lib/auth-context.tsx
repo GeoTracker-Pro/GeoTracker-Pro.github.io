@@ -9,10 +9,10 @@ import {
   signInAnonymously,
   signOut,
   updateProfile,
-  AuthError,
 } from 'firebase/auth';
 import { auth } from './firebase';
 import { createOrUpdateUser } from './firebase-services';
+import { getFirebaseErrorMessage } from './firebase-errors';
 
 interface AuthContextType {
   user: User | null;
@@ -25,28 +25,6 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// Helper function to get user-friendly error messages
-function getFirebaseErrorMessage(error: unknown): string {
-  if (error instanceof Error && 'code' in error) {
-    const authError = error as AuthError;
-    switch (authError.code) {
-      case 'auth/configuration-not-found':
-        return '⚠️ Firebase Authentication is not properly configured. Please enable Authentication in Firebase Console and enable Email/Password and Anonymous sign-in methods.';
-      case 'auth/operation-not-allowed':
-        return '⚠️ This sign-in method is not enabled. Please enable Email/Password or Anonymous authentication in Firebase Console.';
-      case 'auth/invalid-api-key':
-        return '⚠️ Invalid Firebase API key. Please check your Firebase configuration.';
-      case 'auth/app-not-authorized':
-        return '⚠️ This app is not authorized to use Firebase Authentication. Please check your Firebase project settings.';
-      case 'auth/network-request-failed':
-        return '⚠️ Network error. Please check your internet connection and try again.';
-      default:
-        return authError.message;
-    }
-  }
-  return error instanceof Error ? error.message : 'An unknown error occurred';
-}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);

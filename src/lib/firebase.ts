@@ -18,8 +18,8 @@ const firebaseConfig = {
 
 // Validate Firebase configuration
 function validateFirebaseConfig() {
-  const requiredFields = ['apiKey', 'authDomain', 'projectId'];
-  const missingFields = requiredFields.filter(field => !firebaseConfig[field as keyof typeof firebaseConfig]);
+  const requiredFields = ['apiKey', 'authDomain', 'projectId'] as const;
+  const missingFields = requiredFields.filter(field => !firebaseConfig[field]);
   
   if (missingFields.length > 0) {
     console.error('❌ Firebase configuration error: Missing required fields:', missingFields.join(', '));
