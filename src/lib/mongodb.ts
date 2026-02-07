@@ -1,11 +1,5 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://inboxashen_db_user:UMPYU0YZPtD2sJWr@geotrackercluster.g1d8lzk.mongodb.net/?appName=GeoTrackerCluster';
-
-if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable');
-}
-
 interface MongooseCache {
   conn: typeof mongoose | null;
   promise: Promise<typeof mongoose> | null;
@@ -22,6 +16,14 @@ if (!global.mongoose) {
   global.mongoose = cached;
 }
 
+function getMongoDbUri(): string {
+  const uri = process.env.MONGODB_URI;
+  if (!uri) {
+    throw new Error('Please define the MONGODB_URI environment variable');
+  }
+  return uri;
+}
+
 async function connectDB(): Promise<typeof mongoose> {
   if (cached.conn) {
     return cached.conn;
@@ -32,7 +34,9 @@ async function connectDB(): Promise<typeof mongoose> {
       bufferCommands: false,
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+    const uri = getMongoDbUri();
+    cached.promise = mongoose.connect(uri, opts).then((mongoose) => {
+      console.log('MongoDB connected successfully');
       return mongoose;
     });
   }
@@ -41,6 +45,7 @@ async function connectDB(): Promise<typeof mongoose> {
     cached.conn = await cached.promise;
   } catch (e) {
     cached.promise = null;
+    console.error('MongoDB connection error:', e);
     throw e;
   }
 

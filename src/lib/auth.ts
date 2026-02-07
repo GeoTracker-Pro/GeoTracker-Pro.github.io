@@ -1,8 +1,15 @@
 import jwt from 'jsonwebtoken';
 import { NextRequest } from 'next/server';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'geotracker-secret-key-2024';
 const JWT_EXPIRY = '7d';
+
+function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('Please define the JWT_SECRET environment variable');
+  }
+  return secret;
+}
 
 export interface JWTPayload {
   userId: string;
@@ -11,12 +18,12 @@ export interface JWTPayload {
 }
 
 export function generateToken(payload: JWTPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRY });
+  return jwt.sign(payload, getJwtSecret(), { expiresIn: JWT_EXPIRY });
 }
 
 export function verifyToken(token: string): JWTPayload | null {
   try {
-    return jwt.verify(token, JWT_SECRET) as JWTPayload;
+    return jwt.verify(token, getJwtSecret()) as JWTPayload;
   } catch {
     return null;
   }
