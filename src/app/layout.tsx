@@ -6,7 +6,10 @@ export const metadata: Metadata = {
   title: 'GeoTracker - Location Tracking',
   description: 'Browser-based location tracking application',
   icons: {
-    icon: '/favicon.ico',
+    icon: [
+      { url: '/favicon.ico', type: 'image/x-icon' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
   },
 };
 

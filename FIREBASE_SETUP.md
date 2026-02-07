@@ -51,34 +51,44 @@ You need to enable **TWO** authentication methods for GeoTracker to work:
 4. Select a Cloud Firestore location (choose the one closest to your users)
 5. Click **"Enable"**
 
-### 5. Set Firestore Security Rules
+### 5. Set Firestore Security Rules (⚠️ CRITICAL FOR PRODUCTION)
 
-For production use, update your Firestore security rules:
+**This step is required to fix "Missing or insufficient permissions" errors.**
 
-1. Go to **Firestore Database** > **Rules** tab
-2. Replace with the following secure rules:
+#### Option A: Deploy using Firebase CLI (Recommended)
+
+The repository includes a `firestore.rules` file with the correct security rules. Deploy them using:
+
+```bash
+# Install Firebase CLI if you haven't
+npm install -g firebase-tools
+
+# Login to Firebase
+firebase login
+
+# Deploy Firestore rules only
+firebase deploy --only firestore:rules
+```
+
+#### Option B: Manual Configuration via Console
+
+1. Go to **Firestore Database** > **Rules** tab in Firebase Console
+2. Replace the rules with the following:
 
 ```javascript
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow authenticated users to read/write their own trackers
-    match /trackers/{trackerId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null;
-      allow update, delete: if request.auth != null;
-    }
-    
-    // Allow authenticated users to read all users, but only write their own
-    match /users/{userId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == userId;
+    match /{document=**} {
+      allow read, write: if request.auth != null;
     }
   }
 }
 ```
 
 3. Click **"Publish"** to save the rules
+
+⚠️ **Important**: Without these rules, you will see "Missing or insufficient permissions" errors when trying to create trackers or users
 
 ### 6. Verify Your Configuration
 

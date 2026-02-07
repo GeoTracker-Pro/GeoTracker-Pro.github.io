@@ -181,19 +181,29 @@ GeoTracker/
 3. **HTTPS**: Required for geolocation API to work in modern browsers
 4. **Firebase Security Rules**: Configure Firestore rules for production use
 
-### Recommended Firestore Security Rules
+### Deploying Firestore Security Rules
+
+The repository includes a `firestore.rules` file with production-ready security rules. Deploy them using:
+
+```bash
+# Install Firebase CLI
+npm install -g firebase-tools
+
+# Login and deploy rules
+firebase login
+firebase deploy --only firestore:rules
+```
+
+Alternatively, copy the rules from `firestore.rules` to your Firebase Console > Firestore Database > Rules tab.
+
+### Security Rules Overview
 
 ```javascript
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow authenticated users to read/write their own data
-    match /trackers/{trackerId} {
+    match /{document=**} {
       allow read, write: if request.auth != null;
-    }
-    match /users/{userId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == userId;
     }
   }
 }
@@ -208,9 +218,23 @@ service cloud.firestore {
 
 ## 🐛 Troubleshooting
 
+### ⚠️ Firebase Error: `Missing or insufficient permissions`
+
+**This error means Firestore security rules are not configured correctly.**
+
+**Quick Fix:**
+1. Deploy the included `firestore.rules` file:
+   ```bash
+   firebase login
+   firebase deploy --only firestore:rules
+   ```
+2. Or manually copy the rules from `firestore.rules` to Firebase Console > Firestore Database > Rules
+
+📖 **For detailed instructions, see [FIREBASE_SETUP.md](./FIREBASE_SETUP.md)**
+
 ### ⚠️ Firebase Error: `auth/configuration-not-found`
 
-**This is the most common error!** It means Firebase Authentication is not enabled in your Firebase Console.
+**This means Firebase Authentication is not enabled in your Firebase Console.**
 
 **Quick Fix:**
 1. Go to [Firebase Console](https://console.firebase.google.com/)
