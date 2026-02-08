@@ -443,3 +443,79 @@
   color: rgba(255, 255, 255, 0.6);
   margin-top: 4px;
 }
+
+/* Real-time location styles */
+.realtimeBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 255, 136, 0.1);
+  color: #00ff88;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: 12px;
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  font-family: 'Share Tech Mono', monospace;
+  text-transform: none;
+  letter-spacing: 0;
+  vertical-align: middle;
+}
+
+.realtimePulse {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: #00ff88;
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7);
+  }
+  50% {
+    opacity: 0.6;
+    box-shadow: 0 0 0 6px rgba(0, 255, 136, 0);
+  }
+}
+
+.realtimeLocation {
+  margin-top: 15px;
+  padding: 15px;
+  background: rgba(0, 255, 136, 0.05);
+  border: 1px solid rgba(0, 255, 136, 0.2);
+  border-radius: 4px;
+}
+
+.realtimeHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  color: #00ff88;
+  font-size: 13px;
+  font-family: 'Orbitron', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.heartbeatInfo {
+  margin-left: auto;
+  font-size: 10px;
+  color: #666;
+  font-family: 'Share Tech Mono', monospace;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.realtimeCoords {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}

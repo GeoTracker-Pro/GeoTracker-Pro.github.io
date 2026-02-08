@@ -11,8 +11,10 @@ import {
   query,
   where,
   orderBy,
+  onSnapshot,
   Timestamp,
   serverTimestamp,
+  Unsubscribe,
 } from 'firebase/firestore';
 import { getFirebaseDb } from './firebase';
 import type { DeviceInfo, LocationData, Tracker } from './storage';
@@ -397,3 +399,63 @@ export async function deleteUserFromFirebase(userId: string): Promise<boolean> {
     return false;
   }
 }
+
+// === REAL-TIME LISTENERS ===
+
+// Subscribe to real-time tracker updates for a user (or all trackers for admin)
+export function subscribeToTrackers(
+  onUpdate: (trackers: Tracker[]) => void,
+  onError: (error: Error) => void,
+  userId?: string
+): Unsubscribe {
+  try {
+    const db = getFirebaseDb();
+    const trackersRef = collection(db, TRACKERS_COLLECTION);
+
+    let q;
+    if (userId) {
+      q = query(trackersRef, where('userId', '==', userId));
+    } else {
+      q = query(trackersRef);
+    }
+
+    return onSnapshot(
+      q,
+      (snapshot) => {
+        const trackers = snapshot.docs.map((docSnap) => {
+          const data = docSnap.data();
+          return {
+            id: docSnap.id,
+            name: data.name || 'Unnamed Tracker',
+            created: timestampToString(data.created),
+            locations: parseLocationsArray(data.locations),
+            userId: data.userId || null,
+          } as Tracker;
+        });
+
+        // Sort by created date descending (most recent first)
+        trackers.sort(
+          (a, b) => new Date(b.created).getTime() - new Date(a.created).getTime()
+        );
+
+        onUpdate(trackers);
+      },
+      (error) => {
+        if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+          console.error('Real-time tracker subscription error:', error);
+        }
+        onError(error instanceof Error ? error : new Error('Subscription error'));
+      }
+    );
+  } catch (error) {
+    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+      console.error('Error setting up tracker subscription:', error);
+    }
+    onError(error instanceof Error ? error : new Error('Failed to subscribe'));
+    // Return a no-op unsubscribe function
+    return () => {};
+  }
+}
+
+// Re-export Unsubscribe type for consumers
+export type { Unsubscribe };

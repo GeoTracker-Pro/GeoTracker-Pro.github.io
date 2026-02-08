@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
@@ -9,6 +9,7 @@ import {
   getTrackersAsync,
   createTrackerAsync,
   deleteTrackerAsync,
+  subscribeToTrackersRealtime,
 } from '@/lib/storage';
 import styles from './page.module.css';
 
@@ -37,6 +38,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState('');
   const [isError, setIsError] = useState(false);
+  const [realtimeActive, setRealtimeActive] = useState(false);
+  const unsubscribeRef = useRef<(() => void) | null>(null);
 
   const isAdmin = user?.email === ADMIN_EMAIL;
 
@@ -70,13 +73,34 @@ export default function Dashboard() {
 
     if (user) {
       setBaseUrl(window.location.origin + (process.env.NEXT_PUBLIC_BASE_PATH || ''));
-      loadTrackers();
-      
-      // Auto-refresh every 10 seconds to detect changes
-      const interval = setInterval(loadTrackers, 10000);
-      return () => clearInterval(interval);
+
+      // Set up real-time Firestore listener for instant location updates
+      const userId = isAdmin ? undefined : user.uid;
+      const unsubscribe = subscribeToTrackersRealtime(
+        (updatedTrackers) => {
+          setTrackers(updatedTrackers);
+          setLoading(false);
+          setRealtimeActive(true);
+        },
+        (error) => {
+          // On real-time listener error, fall back to polling
+          if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+            console.error('Real-time listener failed, falling back to polling:', error);
+          }
+          setRealtimeActive(false);
+          loadTrackers();
+        },
+        userId
+      );
+
+      unsubscribeRef.current = unsubscribe;
+
+      return () => {
+        unsubscribe();
+        unsubscribeRef.current = null;
+      };
     }
-  }, [router, loadTrackers, user, authLoading]);
+  }, [router, user, authLoading, isAdmin, loadTrackers]);
 
   const handleCreateTracker = async () => {
     const trimmedName = trackerName.trim();
@@ -125,7 +149,10 @@ export default function Dashboard() {
       const url = `${baseUrl}/track?id=${tracker.id}`;
       setGeneratedUrl(url);
       setTrackerName('');
-      loadTrackers();
+      // No need to manually reload — real-time listener will update automatically
+      if (!realtimeActive) {
+        loadTrackers();
+      }
       showMessage('Tracker created successfully!');
     } else {
       showMessage('Failed to create tracker. Please try again.', true);
@@ -161,7 +188,10 @@ export default function Dashboard() {
     }
 
     await deleteTrackerAsync(trackerId);
-    loadTrackers();
+    // No need to manually reload — real-time listener will update automatically
+    if (!realtimeActive) {
+      loadTrackers();
+    }
   };
 
   const handleLogout = async () => {
@@ -265,7 +295,15 @@ export default function Dashboard() {
       </div>
 
       <div className={styles.trackersList}>
-        <h2>Active Sessions ({trackers.length}){isAdmin && ' — Admin View'}</h2>
+        <h2>
+          Active Sessions ({trackers.length}){isAdmin && ' — Admin View'}
+          {realtimeActive && (
+            <span className={styles.realtimeBadge}>
+              <span className={styles.realtimePulse}></span>
+              Real-time
+            </span>
+          )}
+        </h2>
         {trackers.length === 0 ? (
           <div className={styles.emptyState}>
             <div className={styles.emptyStateIcon}>📡</div>
@@ -325,6 +363,50 @@ export default function Dashboard() {
                   </span>
                 </div>
               </div>
+
+              {tracker.locations.length > 0 && (
+                <div className={styles.realtimeLocation}>
+                  <div className={styles.realtimeHeader}>
+                    <span className={styles.realtimePulse}></span>
+                    <strong>Real-Time Location</strong>
+                    <span className={styles.heartbeatInfo}>15s heartbeat</span>
+                  </div>
+                  <div className={styles.realtimeCoords}>
+                    <div className={styles.coordItem}>
+                      <div className={styles.coordLabel}>Latitude</div>
+                      <div className={styles.coordValue}>
+                        {tracker.locations[0].latitude.toFixed(6)}
+                      </div>
+                    </div>
+                    <div className={styles.coordItem}>
+                      <div className={styles.coordLabel}>Longitude</div>
+                      <div className={styles.coordValue}>
+                        {tracker.locations[0].longitude.toFixed(6)}
+                      </div>
+                    </div>
+                    <div className={styles.coordItem}>
+                      <div className={styles.coordLabel}>Accuracy</div>
+                      <div className={styles.coordValue}>
+                        ±{tracker.locations[0].accuracy.toFixed(2)}m
+                      </div>
+                    </div>
+                    <div className={styles.coordItem}>
+                      <div className={styles.coordLabel}>Last Synced</div>
+                      <div className={styles.coordValue}>
+                        {formatDate(tracker.locations[0].timestamp)}
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    className="btn btn-success"
+                    onClick={(e) =>
+                      viewOnMap(tracker.locations[0].latitude, tracker.locations[0].longitude, e)
+                    }
+                  >
+                    🗺️ View Current Location
+                  </button>
+                </div>
+              )}
 
               {expandedTracker === tracker.id && (
                 <div className={styles.trackerDetails}>

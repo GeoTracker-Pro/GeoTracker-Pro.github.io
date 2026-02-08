@@ -8,7 +8,9 @@ import {
   getOrCreateTrackerInFirebase,
   addLocationToTrackerInFirebase,
   deleteTrackerFromFirebase,
+  subscribeToTrackers,
 } from './firebase-services';
+import type { Unsubscribe } from './firebase-services';
 
 export interface DeviceInfo {
   browser: string;
@@ -122,6 +124,15 @@ export async function deleteTrackerAsync(trackingId: string): Promise<boolean> {
     }
     return deleteTracker(trackingId);
   }
+}
+
+// Subscribe to real-time tracker updates from Firebase
+export function subscribeToTrackersRealtime(
+  onUpdate: (trackers: Tracker[]) => void,
+  onError: (error: Error) => void,
+  userId?: string
+): Unsubscribe {
+  return subscribeToTrackers(onUpdate, onError, userId);
 }
 
 // ==========================================
