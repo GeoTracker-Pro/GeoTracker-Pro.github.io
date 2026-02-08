@@ -139,7 +139,7 @@ export async function getOrCreateTrackerInFirebase(trackingId: string, name: str
   }
 }
 
-// Update the latest location for a tracker (replaces instead of appending)
+// Add location to tracker (appends to locations array)
 export async function addLocationToTrackerInFirebase(trackingId: string, location: LocationData): Promise<boolean> {
   try {
     // First ensure the tracker exists
@@ -150,9 +150,14 @@ export async function addLocationToTrackerInFirebase(trackingId: string, locatio
     }
     
     const trackerRef = doc(db, TRACKERS_COLLECTION, trackingId);
-    // Update with only the latest location instead of appending to array
+    
+    // Get current tracker to append to existing locations
+    const currentTracker = await getTrackerFromFirebase(trackingId);
+    const currentLocations = currentTracker?.locations || [];
+    
+    // Append new location to the beginning of the array (most recent first)
     await updateDoc(trackerRef, {
-      locations: [location],
+      locations: [location, ...currentLocations],
     });
     return true;
   } catch (error) {

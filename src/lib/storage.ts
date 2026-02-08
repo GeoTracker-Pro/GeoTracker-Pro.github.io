@@ -179,14 +179,14 @@ export function getOrCreateTracker(trackingId: string): Tracker {
   return tracker;
 }
 
-// Update the latest location for a tracker (replaces instead of appending)
+// Add location to tracker (appends to locations array)
 export function addLocationToTracker(trackingId: string, location: LocationData): boolean {
   const trackers = getTrackers();
   const tracker = trackers.find(t => t.id === trackingId);
 
   if (tracker) {
-    // Replace all locations with just the latest one
-    tracker.locations = [location];
+    // Append new location to the beginning of the array (most recent first)
+    tracker.locations = [location, ...tracker.locations];
     saveTrackers(trackers);
     return true;
   }
