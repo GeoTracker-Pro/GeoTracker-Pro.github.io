@@ -24,8 +24,6 @@ export default function UsersPage() {
       try {
         const fetchedUsers = await getUsersFromFirebase();
         setUsers(fetchedUsers);
-      } catch (error) {
-        console.error('Error loading users:', error);
       } finally {
         setLoading(false);
       }

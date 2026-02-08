@@ -55,7 +55,6 @@ export async function getTrackersAsync(userId?: string): Promise<Tracker[]> {
   try {
     return await getTrackersFromFirebase(userId);
   } catch (error) {
-    console.error('Firebase error, falling back to localStorage:', error);
     return getTrackers();
   }
 }
@@ -65,7 +64,6 @@ export async function getTrackerAsync(trackingId: string): Promise<Tracker | nul
   try {
     return await getTrackerFromFirebase(trackingId);
   } catch (error) {
-    console.error('Firebase error, falling back to localStorage:', error);
     return getTracker(trackingId) || null;
   }
 }
@@ -77,7 +75,6 @@ export async function createTrackerAsync(name: string, userId?: string): Promise
     const tracker = await createTrackerInFirebase(name, trackerId, userId);
     return tracker;
   } catch (error) {
-    console.error('Firebase error, falling back to localStorage:', error);
     return createTracker(name);
   }
 }
@@ -87,7 +84,6 @@ export async function getOrCreateTrackerAsync(trackingId: string): Promise<Track
   try {
     return await getOrCreateTrackerInFirebase(trackingId);
   } catch (error) {
-    console.error('Firebase error, falling back to localStorage:', error);
     return getOrCreateTracker(trackingId);
   }
 }
@@ -97,7 +93,6 @@ export async function addLocationToTrackerAsync(trackingId: string, location: Lo
   try {
     return await addLocationToTrackerInFirebase(trackingId, location);
   } catch (error) {
-    console.error('Firebase error, falling back to localStorage:', error);
     return addLocationToTracker(trackingId, location);
   }
 }
@@ -107,7 +102,6 @@ export async function deleteTrackerAsync(trackingId: string): Promise<boolean> {
   try {
     return await deleteTrackerFromFirebase(trackingId);
   } catch (error) {
-    console.error('Firebase error, falling back to localStorage:', error);
     return deleteTracker(trackingId);
   }
 }
@@ -135,7 +129,6 @@ export function saveTrackers(trackers: Tracker[]): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(trackers));
   } catch (error) {
-    console.error('Error saving trackers:', error);
   }
 }
 

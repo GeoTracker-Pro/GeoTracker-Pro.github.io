@@ -62,6 +62,7 @@ export async function getTrackersFromFirebase(userId?: string): Promise<Tracker[
       } as Tracker;
     });
   } catch (error) {
+    console.error('Error getting trackers:', error);
     return [];
   }
 }
@@ -78,6 +79,7 @@ export async function getTrackerFromFirebase(trackingId: string): Promise<Tracke
     
     const data = snapshot.data();
     if (!data.userId) {
+      console.warn(`Tracker ${trackingId} has no userId - may be a legacy tracker`);
     }
     return {
       id: snapshot.id,
@@ -87,6 +89,7 @@ export async function getTrackerFromFirebase(trackingId: string): Promise<Tracke
       userId: data.userId || null,
     } as Tracker;
   } catch (error) {
+    console.error('Error getting tracker:', error);
     return null;
   }
 }
@@ -122,6 +125,7 @@ export async function createTrackerInFirebase(name: string, customId?: string, u
       userId: userId || null,
     };
   } catch (error) {
+    console.error('Error creating tracker:', error);
     return null;
   }
 }
@@ -135,6 +139,7 @@ export async function getOrCreateTrackerInFirebase(trackingId: string, name: str
     }
     return await createTrackerInFirebase(name, trackingId);
   } catch (error) {
+    console.error('Error getting or creating tracker:', error);
     return null;
   }
 }
@@ -156,6 +161,7 @@ export async function addLocationToTrackerInFirebase(trackingId: string, locatio
     });
     return true;
   } catch (error) {
+    console.error('Error updating location:', error);
     return false;
   }
 }
@@ -167,6 +173,7 @@ export async function deleteTrackerFromFirebase(trackingId: string): Promise<boo
     await deleteDoc(trackerRef);
     return true;
   } catch (error) {
+    console.error('Error deleting tracker:', error);
     return false;
   }
 }
@@ -208,6 +215,7 @@ export async function createOrUpdateUser(userId: string, email: string, displayN
       };
     }
   } catch (error) {
+    console.error('Error creating/updating user:', error);
     return null;
   }
 }
@@ -229,6 +237,7 @@ export async function getUsersFromFirebase(): Promise<User[]> {
       } as User;
     });
   } catch (error) {
+    console.error('Error getting users:', error);
     return [];
   }
 }
@@ -252,6 +261,7 @@ export async function getUserFromFirebase(userId: string): Promise<User | null> 
       lastLoginAt: data.lastLoginAt,
     } as User;
   } catch (error) {
+    console.error('Error getting user:', error);
     return null;
   }
 }
@@ -263,6 +273,7 @@ export async function deleteUserFromFirebase(userId: string): Promise<boolean> {
     await deleteDoc(userRef);
     return true;
   } catch (error) {
+    console.error('Error deleting user:', error);
     return false;
   }
 }

@@ -51,7 +51,6 @@ function TrackerContent() {
       }
       return success;
     } catch (error) {
-      console.error('Error saving location:', error);
       return false;
     }
   }, [trackingId]);
@@ -107,7 +106,7 @@ function TrackerContent() {
           await getOrCreateTrackerAsync(trackingId);
           setTrackerInitialized(true);
         } catch (error) {
-          console.error('Error initializing tracker:', error);
+          // Silently fail - tracker may already exist
         }
       }
     };
@@ -137,7 +136,14 @@ function TrackerContent() {
   }, [trackingId, fetchLocation]);
 
   const mapUrl = locationData
-    ? `https://maps.google.com/maps?q=${locationData.latitude},${locationData.longitude}&z=15&output=embed`
+    ? (() => {
+        const params = new URLSearchParams({
+          q: `${locationData.latitude},${locationData.longitude}`,
+          z: '15',
+          output: 'embed'
+        });
+        return `https://maps.google.com/maps?${params.toString()}`;
+      })()
     : '';
 
   return (

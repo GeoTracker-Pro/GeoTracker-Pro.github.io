@@ -45,8 +45,7 @@ export default function StandaloneTracker() {
       setStatus('success');
       setStatusMessage('Target location acquired');
 
-      // Log data to console (standalone mode - no server storage)
-      console.log('Location Data:', data);
+      // Data available for local debugging if needed
     } catch (error) {
       if (error instanceof GeolocationPositionError) {
         setStatusMessage(getGeolocationErrorMessage(error));
@@ -67,7 +66,14 @@ export default function StandaloneTracker() {
   }, [fetchLocation]);
 
   const mapUrl = locationData
-    ? `https://maps.google.com/maps?q=${locationData.latitude},${locationData.longitude}&z=15&output=embed`
+    ? (() => {
+        const params = new URLSearchParams({
+          q: `${locationData.latitude},${locationData.longitude}`,
+          z: '15',
+          output: 'embed'
+        });
+        return `https://maps.google.com/maps?${params.toString()}`;
+      })()
     : '';
 
   return (

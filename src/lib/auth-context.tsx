@@ -37,21 +37,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       // Set session persistence - user stays signed in until browser window is closed
       setPersistence(auth, browserSessionPersistence).catch((err) => {
-        console.error('Error setting auth persistence:', err);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error setting auth persistence:', err);
+        }
       });
 
       const unsubscribe = onAuthStateChanged(auth, (user) => {
         setUser(user);
         setLoading(false);
       }, (error) => {
-        console.error('Auth state change error:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Auth state change error:', error);
+        }
         setError(getFirebaseErrorMessage(error));
         setLoading(false);
       });
 
       return () => unsubscribe();
     } catch (error) {
-      console.error('Auth initialization error:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Auth initialization error:', error);
+      }
       setError(getFirebaseErrorMessage(error));
       setLoading(false);
     }
@@ -66,7 +72,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       const errorMessage = getFirebaseErrorMessage(err);
       setError(errorMessage);
-      console.error('Sign in error:', err);
       throw err;
     }
   };
@@ -85,7 +90,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       const errorMessage = getFirebaseErrorMessage(err);
       setError(errorMessage);
-      console.error('Sign up error:', err);
       throw err;
     }
   };
@@ -100,7 +104,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       const errorMessage = getFirebaseErrorMessage(err);
       setError(errorMessage);
-      console.error('Guest sign in error:', err);
       throw err;
     }
   };
@@ -112,7 +115,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       const errorMessage = getFirebaseErrorMessage(err);
       setError(errorMessage);
-      console.error('Logout error:', err);
       throw err;
     }
   };
