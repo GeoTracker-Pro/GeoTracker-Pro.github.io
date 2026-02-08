@@ -324,52 +324,43 @@ export async function addLocationToTrackerInFirebase(trackingId: string, locatio
   // Sanitize location data to remove undefined values (Firestore rejects undefined)
   const sanitizedLocation = sanitizeForFirestore({ ...location });
 
-  try {
-    await runTransaction(db, async (transaction) => {
-      const snapshot = await transaction.get(trackerRef);
-
-      if (snapshot.exists()) {
-        // Document exists — append the new location to the existing array
-        const data = snapshot.data();
-        const existingLocations: unknown[] = Array.isArray(data.locations) ? data.locations : [];
-        transaction.update(trackerRef, {
-          locations: [...existingLocations, sanitizedLocation],
-        });
-      } else {
-        // Document doesn't exist yet — create it with the location included
-        transaction.set(trackerRef, {
-          name: 'Shared Tracker',
-          created: serverTimestamp(),
-          locations: [sanitizedLocation],
-        });
-      }
-    });
-    return true;
-  } catch (error) {
-    // If the transaction fails, attempt a simple setDoc with merge as a last resort
+  // Attempt the transaction up to 2 times to handle transient failures
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      const snapshot = await getDoc(trackerRef);
-      if (snapshot.exists()) {
-        const data = snapshot.data();
-        const existingLocations: unknown[] = Array.isArray(data.locations) ? data.locations : [];
-        await updateDoc(trackerRef, {
-          locations: [...existingLocations, sanitizedLocation],
-        });
-      } else {
-        await setDoc(trackerRef, {
-          name: 'Shared Tracker',
-          created: serverTimestamp(),
-          locations: [sanitizedLocation],
-        }, { merge: true });
-      }
+      await runTransaction(db, async (transaction) => {
+        const snapshot = await transaction.get(trackerRef);
+
+        if (snapshot.exists()) {
+          // Document exists — append the new location to the existing array
+          const data = snapshot.data();
+          const existingLocations: unknown[] = Array.isArray(data.locations) ? data.locations : [];
+          transaction.update(trackerRef, {
+            locations: [...existingLocations, sanitizedLocation],
+          });
+        } else {
+          // Document doesn't exist yet — create it with the location included
+          transaction.set(trackerRef, {
+            name: 'Shared Tracker',
+            created: serverTimestamp(),
+            locations: [sanitizedLocation],
+          });
+        }
+      });
       return true;
-    } catch (fallbackError) {
-      if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-        console.error('addLocationToTrackerInFirebase: both transaction and fallback failed:', fallbackError);
+    } catch (error) {
+      lastError = error;
+      // Brief pause before retrying
+      if (attempt < 1) {
+        await new Promise((r) => setTimeout(r, 500));
       }
-      throw fallbackError;
     }
   }
+
+  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+    console.error('addLocationToTrackerInFirebase: transaction failed after retries:', lastError);
+  }
+  throw lastError;
 }
 
 // Delete a tracker

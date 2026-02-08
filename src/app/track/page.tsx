@@ -82,11 +82,14 @@ function TrackerContent() {
       const position = await getCurrentPosition();
       const device = getDeviceInfo();
 
-      // Only fetch IP on the first call; reuse the cached value for auto-updates
+      // Only fetch IP on the first successful call; reuse the cached value for auto-updates
       let ip = cachedIpRef.current || '';
       if (!cachedIpRef.current) {
-        ip = await getIPAddress();
-        cachedIpRef.current = ip;
+        const fetchedIp = await getIPAddress();
+        if (fetchedIp && fetchedIp !== 'Unable to fetch') {
+          cachedIpRef.current = fetchedIp;
+        }
+        ip = fetchedIp;
       }
 
       const data: LocationData = {
