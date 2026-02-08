@@ -140,7 +140,11 @@ function TrackerContent() {
           setTrackerDetails(tracker);
         }
       } catch (error) {
-        // Continue even if init fails — location tracking can still attempt
+        if (!cancelled) {
+          setStatus('error');
+          setStatusMessage('Failed to initialize tracking session. Please check your connection and try again.');
+        }
+        return;
       }
 
       if (cancelled) return;
@@ -187,6 +191,22 @@ function TrackerContent() {
         return `https://maps.google.com/maps?${params.toString()}`;
       })()
     : '';
+
+  if (!trackingId) {
+    return (
+      <div className={styles.gradientBg}>
+        <div className={styles.container}>
+          <h1>🎯 Cyber Tracker</h1>
+          <div className={`status error`}>
+            ✗ No tracking session ID provided. Please use a valid tracking link.
+          </div>
+          <Link href="/login" className={styles.backLink}>
+            ← Return to Command Center
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.gradientBg}>

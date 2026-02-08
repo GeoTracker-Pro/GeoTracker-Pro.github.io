@@ -31,6 +31,7 @@ export default function Dashboard() {
   const router = useRouter();
   const { user, loading: authLoading, logout } = useAuth();
   const [trackers, setTrackers] = useState<Tracker[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [trackerName, setTrackerName] = useState('');
   const [generatedUrl, setGeneratedUrl] = useState('');
   const [expandedTracker, setExpandedTracker] = useState<string | null>(null);
@@ -219,6 +220,87 @@ export default function Dashboard() {
     setExpandedTracker(expandedTracker === trackerId ? null : trackerId);
   };
 
+  const exportToJSON = (tracker: Tracker, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (tracker.locations.length === 0) {
+      showMessage('No location data to export.', true);
+      return;
+    }
+    const data = {
+      tracker: {
+        id: tracker.id,
+        name: tracker.name,
+        created: tracker.created,
+      },
+      locations: tracker.locations.map(loc => ({
+        latitude: loc.latitude,
+        longitude: loc.longitude,
+        accuracy: loc.accuracy,
+        timestamp: loc.timestamp,
+        device: loc.deviceInfo ? {
+          browser: loc.deviceInfo.browser,
+          os: loc.deviceInfo.os,
+          platform: loc.deviceInfo.platform,
+          screen: loc.deviceInfo.screen,
+        } : null,
+        ip: loc.ip || null,
+      })),
+      exportedAt: new Date().toISOString(),
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `tracker-${tracker.name.replace(/[^a-zA-Z0-9]/g, '_')}-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showMessage('Location data exported as JSON!');
+  };
+
+  const exportToCSV = (tracker: Tracker, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (tracker.locations.length === 0) {
+      showMessage('No location data to export.', true);
+      return;
+    }
+    const escapeCsvField = (field: string) => {
+      if (field.includes(',') || field.includes('"') || field.includes('\n')) {
+        return `"${field.replace(/"/g, '""')}"`;
+      }
+      return field;
+    };
+    const headers = ['Timestamp', 'Latitude', 'Longitude', 'Accuracy (m)', 'Browser', 'OS', 'Platform', 'Screen', 'IP Address'];
+    const rows = tracker.locations.map(loc => [
+      loc.timestamp,
+      loc.latitude.toFixed(6),
+      loc.longitude.toFixed(6),
+      loc.accuracy.toFixed(2),
+      loc.deviceInfo?.browser || '',
+      loc.deviceInfo?.os || '',
+      loc.deviceInfo?.platform || '',
+      loc.deviceInfo?.screen || '',
+      loc.ip || '',
+    ].map(escapeCsvField));
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `tracker-${tracker.name.replace(/[^a-zA-Z0-9]/g, '_')}-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showMessage('Location data exported as CSV!');
+  };
+
+  const filteredTrackers = trackers.filter((t) => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      t.name.toLowerCase().includes(query) ||
+      t.id.toLowerCase().includes(query)
+    );
+  });
+
   if (authLoading || loading) {
     return (
       <div className={styles.dashboardBg}>
@@ -302,7 +384,7 @@ export default function Dashboard() {
 
       <div className={styles.trackersList}>
         <h2>
-          Active Sessions ({trackers.length})
+          Active Sessions ({searchQuery ? `${filteredTrackers.length}/${trackers.length}` : trackers.length})
           {realtimeActive && (
             <span className={styles.realtimeBadge}>
               <span className={styles.realtimePulse}></span>
@@ -310,13 +392,23 @@ export default function Dashboard() {
             </span>
           )}
         </h2>
-        {trackers.length === 0 ? (
+        <div className={styles.searchBox}>
+          <input
+            type="text"
+            placeholder="Search trackers by name or ID..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className={styles.searchInput}
+            aria-label="Search trackers"
+          />
+        </div>
+        {filteredTrackers.length === 0 ? (
           <div className={styles.emptyState}>
             <div className={styles.emptyStateIcon}>📡</div>
             <p>No active tracking sessions. Initialize your first tracker above.</p>
           </div>
         ) : (
-          trackers.map((tracker) => (
+          filteredTrackers.map((tracker) => (
             <div
               key={tracker.id}
               className={styles.trackerCard}
@@ -425,6 +517,14 @@ export default function Dashboard() {
 
               {expandedTracker === tracker.id && (
                 <div className={styles.trackerDetails}>
+                  <div className={styles.exportActions}>
+                    <button className="btn btn-secondary" onClick={(e) => exportToJSON(tracker, e)}>
+                      📥 Export JSON
+                    </button>
+                    <button className="btn btn-secondary" onClick={(e) => exportToCSV(tracker, e)}>
+                      📊 Export CSV
+                    </button>
+                  </div>
                   {tracker.locations.length > 0 ? (
                     tracker.locations.map((location, index) => (
                       <div key={index} className={styles.locationEntry}>
