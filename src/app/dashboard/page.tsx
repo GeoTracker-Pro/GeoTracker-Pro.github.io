@@ -12,6 +12,8 @@ import {
 } from '@/lib/storage';
 import styles from './page.module.css';
 
+const ADMIN_EMAIL = 'inbox.ashen@gmail.com';
+
 export default function Dashboard() {
   const router = useRouter();
   const { user, loading: authLoading, logout } = useAuth();
@@ -22,17 +24,22 @@ export default function Dashboard() {
   const [baseUrl, setBaseUrl] = useState('');
   const [loading, setLoading] = useState(true);
 
+  const isAdmin = user?.email === ADMIN_EMAIL;
+
   const loadTrackers = useCallback(async () => {
     if (!user) return;
     try {
-      const storedTrackers = await getTrackersAsync(user.uid);
+      // Admin sees all trackers; regular users see only their own
+      const storedTrackers = isAdmin
+        ? await getTrackersAsync()
+        : await getTrackersAsync(user.uid);
       setTrackers(storedTrackers);
     } catch (error) {
       console.error('Error loading trackers:', error);
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, isAdmin]);
 
   useEffect(() => {
     // Check if user is authenticated
@@ -172,7 +179,7 @@ export default function Dashboard() {
       </div>
 
       <div className={styles.trackersList}>
-        <h2>Active Sessions ({trackers.length})</h2>
+        <h2>Active Sessions ({trackers.length}){isAdmin && ' — Admin View'}</h2>
         {trackers.length === 0 ? (
           <div className={styles.emptyState}>
             <div className={styles.emptyStateIcon}>📡</div>
@@ -191,6 +198,9 @@ export default function Dashboard() {
                     {tracker.name}
                   </div>
                   <div className={styles.trackerId}>ID: {tracker.id}</div>
+                  {isAdmin && tracker.userId && tracker.userId !== user?.uid && (
+                    <div className={styles.createdBy}>Created by: {tracker.userId}</div>
+                  )}
                 </div>
                 <div className={styles.trackerActions}>
                   <span className={styles.locationsCount}>
@@ -213,6 +223,20 @@ export default function Dashboard() {
                   {tracker.locations.length > 0
                     ? new Date(tracker.locations[0].timestamp).toLocaleString()
                     : 'Awaiting...'}
+                </div>
+                <div className={styles.infoItem}>
+                  <strong>Tracking Link:</strong>{' '}
+                  <span
+                    className={styles.trackerLink}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const link = `${baseUrl}/track?id=${tracker.id}`;
+                      navigator.clipboard.writeText(link).then(() => alert('Tracking link copied!'));
+                    }}
+                    title="Click to copy"
+                  >
+                    {baseUrl}/track?id={tracker.id}
+                  </span>
                 </div>
               </div>
 
