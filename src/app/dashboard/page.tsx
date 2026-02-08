@@ -13,7 +13,6 @@ import {
 } from '@/lib/storage';
 import styles from './page.module.css';
 
-const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || '';
 const FALLBACK_POLL_INTERVAL_MS = 30000;
 
 // Safe date formatting helper
@@ -42,8 +41,6 @@ export default function Dashboard() {
   const [realtimeActive, setRealtimeActive] = useState(false);
   const unsubscribeRef = useRef<(() => void) | null>(null);
 
-  const isAdmin = user?.email === ADMIN_EMAIL;
-
   const showMessage = (message: string, error = false) => {
     setStatusMessage(message);
     setIsError(error);
@@ -53,17 +50,15 @@ export default function Dashboard() {
   const loadTrackers = useCallback(async () => {
     if (!user) return;
     try {
-      // Admin sees all trackers; regular users see only their own
-      const storedTrackers = isAdmin
-        ? await getTrackersAsync()
-        : await getTrackersAsync(user.uid);
+      // Show all trackers for any authenticated user (single-user mode)
+      const storedTrackers = await getTrackersAsync();
       setTrackers(storedTrackers);
     } catch (error) {
       showMessage('Failed to load trackers. Please try again.', true);
     } finally {
       setLoading(false);
     }
-  }, [user, isAdmin]);
+  }, [user]);
 
   // Use a ref for the fallback loader to avoid re-triggering the subscription effect
   const loadTrackersRef = useRef(loadTrackers);
@@ -80,7 +75,7 @@ export default function Dashboard() {
       setBaseUrl(window.location.origin + (process.env.NEXT_PUBLIC_BASE_PATH || ''));
 
       // Set up real-time Firestore listener for instant location updates
-      const userId = isAdmin ? undefined : user.uid;
+      // No userId filter - show all trackers (single-user mode)
       const unsubscribe = subscribeToTrackersRealtime(
         (updatedTrackers) => {
           setTrackers(updatedTrackers);
@@ -94,8 +89,7 @@ export default function Dashboard() {
           }
           setRealtimeActive(false);
           loadTrackersRef.current();
-        },
-        userId
+        }
       );
 
       unsubscribeRef.current = unsubscribe;
@@ -112,7 +106,7 @@ export default function Dashboard() {
         clearInterval(pollInterval);
       };
     }
-  }, [router, user, authLoading, isAdmin]);
+  }, [router, user, authLoading]);
 
   const handleCreateTracker = async () => {
     const trimmedName = trackerName.trim();
@@ -308,7 +302,7 @@ export default function Dashboard() {
 
       <div className={styles.trackersList}>
         <h2>
-          Active Sessions ({trackers.length}){isAdmin && ' — Admin View'}
+          Active Sessions ({trackers.length})
           {realtimeActive && (
             <span className={styles.realtimeBadge}>
               <span className={styles.realtimePulse}></span>
@@ -334,8 +328,8 @@ export default function Dashboard() {
                     {tracker.name}
                   </div>
                   <div className={styles.trackerId}>ID: {tracker.id}</div>
-                  {isAdmin && tracker.userId && tracker.userId !== user?.uid && (
-                    <div className={styles.createdBy}>Created by: {tracker.userId}</div>
+                  {tracker.userId && (
+                    <div className={styles.createdBy}>Owner: {tracker.userId}</div>
                   )}
                 </div>
                 <div className={styles.trackerActions}>
