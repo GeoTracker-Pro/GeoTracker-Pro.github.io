@@ -211,9 +211,11 @@ export async function createTrackerInFirebase(name: string, customId?: string, u
     
     let docRef;
     if (customId) {
-      // Use custom ID
+      // Use custom ID with merge to avoid overwriting fields (e.g. userId)
+      // that may have been set by the dashboard before the track page races
+      // to create the same document.
       docRef = doc(db, TRACKERS_COLLECTION, customId);
-      await setDoc(docRef, trackerData);
+      await setDoc(docRef, trackerData, { merge: true });
     } else {
       // Auto-generate ID
       docRef = await addDoc(collection(db, TRACKERS_COLLECTION), trackerData);
@@ -294,13 +296,17 @@ export async function addLocationToTrackerInFirebase(trackingId: string, locatio
     }
   }
 
-  // Document doesn't exist yet — create it with the location already included
-  // Using setDoc (not updateDoc) so the document is created atomically with data
+  // Document doesn't exist yet — create it with the location already included.
+  // Use merge:true so that if the document was already created (e.g. by the
+  // dashboard with a userId), existing fields like userId and name are preserved
+  // rather than being overwritten. Without merge, a tracker created via the
+  // dashboard (with userId) would lose its userId when the track page adds the
+  // first location, making it invisible to the dashboard's userId-filtered query.
   await setDoc(trackerRef, {
     name: 'Shared Tracker',
     created: serverTimestamp(),
     locations: [sanitizedLocation],
-  });
+  }, { merge: true });
   return true;
 }
 
