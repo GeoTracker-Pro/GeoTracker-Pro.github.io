@@ -22,7 +22,7 @@ function validateFirebaseConfig() {
   const missingFields = requiredFields.filter(field => !firebaseConfig[field]);
   
   if (missingFields.length > 0) {
-    if (process.env.NODE_ENV === 'development') {
+    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
       console.error('❌ Firebase configuration error: Missing required fields:', missingFields.join(', '));
     }
     return false;
@@ -31,39 +31,87 @@ function validateFirebaseConfig() {
   return true;
 }
 
-// Initialize Firebase with error handling
-let app: FirebaseApp;
-let db: Firestore;
-let auth: Auth;
+// Lazy initialization - Firebase is only initialized when first accessed
+let app: FirebaseApp | undefined;
+let db: Firestore | undefined;
+let auth: Auth | undefined;
+let initialized = false;
+let initError: Error | undefined;
 
-try {
-  if (!validateFirebaseConfig()) {
-    throw new Error('Invalid Firebase configuration');
+function initializeFirebase() {
+  // Skip if already attempted initialization
+  if (initialized) {
+    if (initError) {
+      throw initError;
+    }
+    return;
   }
-  
-  // Initialize Firebase (singleton pattern to prevent multiple initializations)
-  app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-  
-  // Initialize Firestore
-  db = getFirestore(app);
-  
-  // Initialize Auth
-  auth = getAuth(app);
-  
-  // Firebase initialized successfully
-  if (process.env.NODE_ENV === 'development') {
-    console.log('✅ Firebase initialized successfully');
-    console.log('📱 Project ID:', firebaseConfig.projectId);
+
+  initialized = true;
+
+  try {
+    if (!validateFirebaseConfig()) {
+      initError = new Error('Invalid Firebase configuration. Please check your environment variables.');
+      throw initError;
+    }
+    
+    // Initialize Firebase (singleton pattern to prevent multiple initializations)
+    app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+    
+    // Initialize Firestore
+    db = getFirestore(app);
+    
+    // Initialize Auth
+    auth = getAuth(app);
+    
+    // Firebase initialized successfully
+    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+      console.log('✅ Firebase initialized successfully');
+      console.log('📱 Project ID:', firebaseConfig.projectId);
+    }
+  } catch (error) {
+    initError = error instanceof Error ? error : new Error('Unknown Firebase initialization error');
+    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+      console.error('❌ Firebase initialization error:', error);
+      console.error('🔧 FIREBASE SETUP REQUIRED:');
+      console.error('Please ensure Firebase Authentication is enabled in your Firebase Console');
+    }
+    throw initError;
   }
-} catch (error) {
-  if (process.env.NODE_ENV === 'development') {
-    console.error('❌ Firebase initialization error:', error);
-    console.error('🔧 FIREBASE SETUP REQUIRED:');
-    console.error('Please ensure Firebase Authentication is enabled in your Firebase Console');
-  }
-  
-  throw new Error(`Firebase initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
 }
 
-export { db, auth };
-export default app;
+// Getters that perform lazy initialization
+export function getFirebaseDb(): Firestore {
+  if (!db) {
+    initializeFirebase();
+  }
+  if (!db) {
+    throw new Error('Firebase Firestore is not available');
+  }
+  return db;
+}
+
+export function getFirebaseAuth(): Auth {
+  if (!auth) {
+    initializeFirebase();
+  }
+  if (!auth) {
+    throw new Error('Firebase Auth is not available');
+  }
+  return auth;
+}
+
+export function getFirebaseApp(): FirebaseApp | undefined {
+  if (!app) {
+    try {
+      initializeFirebase();
+    } catch (e) {
+      // Return undefined if initialization fails
+      return undefined;
+    }
+  }
+  return app;
+}
+
+// Export the getter function as default (lazy initialization)
+export default getFirebaseApp;

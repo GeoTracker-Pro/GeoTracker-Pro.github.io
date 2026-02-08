@@ -14,7 +14,7 @@ import {
   Timestamp,
   serverTimestamp,
 } from 'firebase/firestore';
-import { db } from './firebase';
+import { getFirebaseDb } from './firebase';
 import type { DeviceInfo, LocationData, Tracker } from './storage';
 
 // Collection names
@@ -42,6 +42,7 @@ function timestampToString(timestamp: Timestamp | string | undefined): string {
 // Get all trackers for a specific user
 export async function getTrackersFromFirebase(userId?: string): Promise<Tracker[]> {
   try {
+    const db = getFirebaseDb();
     const trackersRef = collection(db, TRACKERS_COLLECTION);
     let q;
     if (userId) {
@@ -69,6 +70,7 @@ export async function getTrackersFromFirebase(userId?: string): Promise<Tracker[
 // Get a specific tracker by ID
 export async function getTrackerFromFirebase(trackingId: string): Promise<Tracker | null> {
   try {
+    const db = getFirebaseDb();
     const trackerRef = doc(db, TRACKERS_COLLECTION, trackingId);
     const snapshot = await getDoc(trackerRef);
     
@@ -94,6 +96,7 @@ export async function getTrackerFromFirebase(trackingId: string): Promise<Tracke
 // Create a new tracker
 export async function createTrackerInFirebase(name: string, customId?: string, userId?: string): Promise<Tracker | null> {
   try {
+    const db = getFirebaseDb();
     const trackerData: Record<string, unknown> = {
       name: name || 'Unnamed Tracker',
       created: serverTimestamp(),
@@ -142,6 +145,7 @@ export async function getOrCreateTrackerInFirebase(trackingId: string, name: str
 // Add location to tracker (appends to locations array)
 export async function addLocationToTrackerInFirebase(trackingId: string, location: LocationData): Promise<boolean> {
   try {
+    const db = getFirebaseDb();
     // First ensure the tracker exists
     const tracker = await getTrackerFromFirebase(trackingId);
     if (!tracker) {
@@ -168,6 +172,7 @@ export async function addLocationToTrackerInFirebase(trackingId: string, locatio
 // Delete a tracker
 export async function deleteTrackerFromFirebase(trackingId: string): Promise<boolean> {
   try {
+    const db = getFirebaseDb();
     const trackerRef = doc(db, TRACKERS_COLLECTION, trackingId);
     await deleteDoc(trackerRef);
     return true;
@@ -181,6 +186,7 @@ export async function deleteTrackerFromFirebase(trackingId: string): Promise<boo
 // Create or update user in Firestore
 export async function createOrUpdateUser(userId: string, email: string, displayName?: string): Promise<User | null> {
   try {
+    const db = getFirebaseDb();
     const userRef = doc(db, USERS_COLLECTION, userId);
     const userDoc = await getDoc(userRef);
     
@@ -220,6 +226,7 @@ export async function createOrUpdateUser(userId: string, email: string, displayN
 // Get all users
 export async function getUsersFromFirebase(): Promise<User[]> {
   try {
+    const db = getFirebaseDb();
     const usersRef = collection(db, USERS_COLLECTION);
     const snapshot = await getDocs(usersRef);
     
@@ -241,6 +248,7 @@ export async function getUsersFromFirebase(): Promise<User[]> {
 // Get a specific user
 export async function getUserFromFirebase(userId: string): Promise<User | null> {
   try {
+    const db = getFirebaseDb();
     const userRef = doc(db, USERS_COLLECTION, userId);
     const snapshot = await getDoc(userRef);
     
@@ -264,6 +272,7 @@ export async function getUserFromFirebase(userId: string): Promise<User | null> 
 // Delete a user
 export async function deleteUserFromFirebase(userId: string): Promise<boolean> {
   try {
+    const db = getFirebaseDb();
     const userRef = doc(db, USERS_COLLECTION, userId);
     await deleteDoc(userRef);
     return true;

@@ -12,7 +12,7 @@ import {
   browserSessionPersistence,
   setPersistence,
 } from 'firebase/auth';
-import { auth } from './firebase';
+import { getFirebaseAuth } from './firebase';
 import { createOrUpdateUser } from './firebase-services';
 import { getFirebaseErrorMessage } from './firebase-errors';
 
@@ -35,6 +35,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
+      const auth = getFirebaseAuth();
+      
       // Set session persistence - user stays signed in until browser window is closed
       setPersistence(auth, browserSessionPersistence).catch((err) => {
         if (process.env.NODE_ENV === 'development') {
@@ -66,6 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = async (email: string, password: string) => {
     try {
       setError(null);
+      const auth = getFirebaseAuth();
       const result = await signInWithEmailAndPassword(auth, email, password);
       // Update user record in Firestore
       await createOrUpdateUser(result.user.uid, email, result.user.displayName || undefined);
@@ -79,6 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = async (email: string, password: string, displayName?: string) => {
     try {
       setError(null);
+      const auth = getFirebaseAuth();
       const result = await createUserWithEmailAndPassword(auth, email, password);
       
       if (displayName) {
@@ -97,6 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInAsGuest = async () => {
     try {
       setError(null);
+      const auth = getFirebaseAuth();
       const result = await signInAnonymously(auth);
       // Create anonymous user record with UID-based identifier
       const guestEmail = `guest_${result.user.uid}@anonymous.local`;
@@ -111,6 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     try {
       setError(null);
+      const auth = getFirebaseAuth();
       await signOut(auth);
     } catch (err) {
       const errorMessage = getFirebaseErrorMessage(err);
