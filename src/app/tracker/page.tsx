@@ -47,7 +47,13 @@ export default function StandaloneTracker() {
 
       // Data available for local debugging if needed
     } catch (error: unknown) {
-      if (error && typeof error === 'object' && 'code' in error && 'PERMISSION_DENIED' in error) {
+      if (
+        error &&
+        typeof error === 'object' &&
+        'code' in error &&
+        typeof (error as { code: unknown }).code === 'number' &&
+        'message' in error
+      ) {
         setStatusMessage(getGeolocationErrorMessage(error as GeolocationPositionError));
       } else if (error instanceof Error) {
         setStatusMessage(error.message);
