@@ -41,25 +41,35 @@ function TrackerContent() {
   const [trackerInitialized, setTrackerInitialized] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const initializingRef = useRef(false);
+  // Use a ref for trackerInitialized to avoid stale closures in callbacks
+  const trackerInitializedRef = useRef(false);
 
-  // Initialize tracker if needed and save location
+  // Save location data to Firebase, with retry on failure
   const saveLocationToStorage = useCallback(async (data: LocationData) => {
-    if (!trackingId || !trackerInitialized) return false;
+    if (!trackingId || !trackerInitializedRef.current) return false;
 
-    try {
-      const success = await addLocationToTrackerAsync(trackingId, data);
-      if (success) {
-        setUpdateCount((prev) => prev + 1);
-        setLastUpdate(new Date());
+    const maxRetries = 2;
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const success = await addLocationToTrackerAsync(trackingId, data);
+        if (success) {
+          setUpdateCount((prev) => prev + 1);
+          setLastUpdate(new Date());
+          return true;
+        }
+      } catch (error) {
+        // Continue to retry
       }
-      return success;
-    } catch (error) {
-      return false;
+      // Wait briefly before retrying
+      if (attempt < maxRetries) {
+        await new Promise((r) => setTimeout(r, 1000));
+      }
     }
-  }, [trackingId, trackerInitialized]);
+    return false;
+  }, [trackingId]);
 
   const fetchLocation = useCallback(async (isAutoUpdate = false) => {
-    if (!trackerInitialized) return;
+    if (!trackerInitializedRef.current) return;
 
     if (!isAutoUpdate) {
       setStatus('loading');
@@ -88,7 +98,10 @@ function TrackerContent() {
 
       // Save to Firebase
       if (trackingId) {
-        await saveLocationToStorage(data);
+        const saved = await saveLocationToStorage(data);
+        if (!saved) {
+          setStatusMessage('Location acquired but failed to sync to server');
+        }
       }
     } catch (error) {
       if (error instanceof GeolocationPositionError) {
@@ -100,54 +113,65 @@ function TrackerContent() {
       }
       setStatus('error');
     }
-  }, [trackingId, trackerInitialized, saveLocationToStorage]);
+  }, [trackingId, saveLocationToStorage]);
 
-  // Initialize tracker first, then start location tracking
+  // Keep a ref to fetchLocation so the effect always calls the latest version
+  const fetchLocationRef = useRef(fetchLocation);
+  fetchLocationRef.current = fetchLocation;
+
+  // Single effect: initialize tracker, then start location tracking
   useEffect(() => {
-    const initTracker = async () => {
-      if (!trackingId || trackerInitialized || initializingRef.current) return;
-      initializingRef.current = true;
+    if (!trackingId || initializingRef.current) return;
+    initializingRef.current = true;
 
+    let cancelled = false;
+
+    const initAndTrack = async () => {
+      // Step 1: Initialize the tracker
       try {
         const tracker = await getOrCreateTrackerAsync(trackingId);
+        if (cancelled) return;
         if (tracker) {
           setTrackerDetails(tracker);
         }
-        setTrackerInitialized(true);
       } catch (error) {
-        // Still mark as initialized so location tracking can attempt
-        setTrackerInitialized(true);
-      } finally {
-        initializingRef.current = false;
+        // Continue even if init fails — location tracking can still attempt
+      }
+
+      if (cancelled) return;
+
+      // Mark tracker as initialized
+      trackerInitializedRef.current = true;
+      setTrackerInitialized(true);
+
+      // Step 2: Gather device info
+      const device = getDeviceInfo();
+      setDeviceInfo(device);
+      getIPAddress().then((ip) => {
+        if (!cancelled) setIpAddress(ip);
+      });
+
+      // Step 3: Initial location fetch (directly after init, no separate effect)
+      await fetchLocationRef.current();
+
+      // Step 4: Set up 15-second auto-update interval
+      if (!cancelled) {
+        intervalRef.current = setInterval(() => {
+          fetchLocationRef.current(true);
+        }, 15000);
       }
     };
-    initTracker();
-  }, [trackingId, trackerInitialized]);
 
-  // Start location tracking only after tracker is initialized
-  useEffect(() => {
-    if (!trackerInitialized) return;
-
-    const device = getDeviceInfo();
-    setDeviceInfo(device);
-    getIPAddress().then(setIpAddress);
-
-    // Initial location fetch
-    fetchLocation();
-
-    // Set up 15-second auto-update interval
-    if (trackingId) {
-      intervalRef.current = setInterval(() => {
-        fetchLocation(true);
-      }, 15000);
-    }
+    initAndTrack();
 
     return () => {
+      cancelled = true;
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
     };
-  }, [trackingId, trackerInitialized, fetchLocation]);
+  }, [trackingId]);
 
   const mapUrl = locationData
     ? (() => {
