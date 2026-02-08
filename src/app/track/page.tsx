@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import {
+  Tracker,
   DeviceInfo,
   getDeviceInfo,
   getIPAddress,
@@ -36,12 +37,14 @@ function TrackerContent() {
   const [ipAddress, setIpAddress] = useState('Scanning...');
   const [updateCount, setUpdateCount] = useState(0);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  const [trackerDetails, setTrackerDetails] = useState<Tracker | null>(null);
   const [trackerInitialized, setTrackerInitialized] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const initializingRef = useRef(false);
 
   // Initialize tracker if needed and save location
   const saveLocationToStorage = useCallback(async (data: LocationData) => {
-    if (!trackingId) return false;
+    if (!trackingId || !trackerInitialized) return false;
 
     try {
       const success = await addLocationToTrackerAsync(trackingId, data);
@@ -53,9 +56,11 @@ function TrackerContent() {
     } catch (error) {
       return false;
     }
-  }, [trackingId]);
+  }, [trackingId, trackerInitialized]);
 
   const fetchLocation = useCallback(async (isAutoUpdate = false) => {
+    if (!trackerInitialized) return;
+
     if (!isAutoUpdate) {
       setStatus('loading');
       setStatusMessage('Acquiring target coordinates...');
@@ -95,25 +100,34 @@ function TrackerContent() {
       }
       setStatus('error');
     }
-  }, [trackingId, saveLocationToStorage]);
+  }, [trackingId, trackerInitialized, saveLocationToStorage]);
 
-  // Initialize tracker
+  // Initialize tracker first, then start location tracking
   useEffect(() => {
     const initTracker = async () => {
-      if (trackingId && !trackerInitialized) {
-        try {
-          // Auto-create tracker if it doesn't exist
-          await getOrCreateTrackerAsync(trackingId);
-          setTrackerInitialized(true);
-        } catch (error) {
-          // Silently fail - tracker may already exist
+      if (!trackingId || trackerInitialized || initializingRef.current) return;
+      initializingRef.current = true;
+
+      try {
+        const tracker = await getOrCreateTrackerAsync(trackingId);
+        if (tracker) {
+          setTrackerDetails(tracker);
         }
+        setTrackerInitialized(true);
+      } catch (error) {
+        // Still mark as initialized so location tracking can attempt
+        setTrackerInitialized(true);
+      } finally {
+        initializingRef.current = false;
       }
     };
     initTracker();
   }, [trackingId, trackerInitialized]);
 
+  // Start location tracking only after tracker is initialized
   useEffect(() => {
+    if (!trackerInitialized) return;
+
     const device = getDeviceInfo();
     setDeviceInfo(device);
     getIPAddress().then(setIpAddress);
@@ -125,7 +139,7 @@ function TrackerContent() {
     if (trackingId) {
       intervalRef.current = setInterval(() => {
         fetchLocation(true);
-      }, 15000); // 15 seconds
+      }, 15000);
     }
 
     return () => {
@@ -133,7 +147,7 @@ function TrackerContent() {
         clearInterval(intervalRef.current);
       }
     };
-  }, [trackingId, fetchLocation]);
+  }, [trackingId, trackerInitialized, fetchLocation]);
 
   const mapUrl = locationData
     ? (() => {
@@ -154,8 +168,16 @@ function TrackerContent() {
 
         {trackingId && (
           <div className={styles.trackerInfo}>
-            <p>🔗 <strong>Active Session:</strong> {trackingId.substring(0, 20)}...</p>
-            <p>📡 Location data is being recorded to Firebase</p>
+            {trackerDetails ? (
+              <>
+                <p>📋 <strong>Tracker:</strong> {trackerDetails.name}</p>
+                <p>🕐 <strong>Created:</strong> {new Date(trackerDetails.created).toLocaleString()}</p>
+                <p>🔗 <strong>Session ID:</strong> {trackingId.substring(0, 20)}...</p>
+              </>
+            ) : (
+              <p>🔗 <strong>Session ID:</strong> {trackingId.substring(0, 20)}...</p>
+            )}
+            <p>📡 Location data is being recorded</p>
           </div>
         )}
 

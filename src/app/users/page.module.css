@@ -125,8 +125,132 @@
   margin-bottom: 20px;
 }
 
+.toolbarContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.sectionTitle {
+  color: #00ff88;
+  font-size: 18px;
+  font-family: 'Orbitron', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 0;
+}
+
+.searchBox {
+  flex: 0 1 300px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 10px 16px;
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  border-radius: 4px;
+  font-size: 13px;
+  background: rgba(0, 0, 0, 0.5);
+  color: #e0e0e0;
+  font-family: 'Share Tech Mono', monospace;
+  transition: all 0.3s;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #00ff88;
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+}
+
+.searchInput::placeholder {
+  color: #555;
+}
+
+.clearSearchBtn {
+  background: rgba(0, 204, 255, 0.1);
+  color: #00ccff;
+  border: 1px solid rgba(0, 204, 255, 0.3);
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  margin-top: 10px;
+  transition: all 0.3s;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.clearSearchBtn:hover {
+  background: rgba(0, 204, 255, 0.2);
+  box-shadow: 0 0 10px rgba(0, 204, 255, 0.3);
+}
+
+.statusMessage {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 15px 25px;
+  border-radius: 8px;
+  font-weight: 500;
+  z-index: 9999;
+  animation: slideIn 0.3s ease-out;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+}
+
+.statusSuccess {
+  background: rgba(0, 200, 83, 0.95);
+  color: white;
+  border: 1px solid rgba(0, 255, 136, 0.5);
+}
+
+.statusError {
+  background: rgba(220, 38, 38, 0.95);
+  color: white;
+  border: 1px solid rgba(255, 50, 50, 0.5);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.adminBadge {
+  background: linear-gradient(135deg, #ff3366, #ff6b35);
+  color: white;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.userCardActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.metaAgo {
+  color: #555;
+  font-size: 11px;
+  margin-left: 5px;
+}
+
 .usersList {
   color: #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 .usersList h2 {
@@ -400,4 +524,8 @@
   gap: 15px;
   justify-content: flex-end;
   margin-top: 25px;
+}
+
+.metaSmall {
+  font-size: 11px;
 }
