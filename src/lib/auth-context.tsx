@@ -12,7 +12,7 @@ import {
   browserSessionPersistence,
   setPersistence,
 } from 'firebase/auth';
-import { getFirebaseAuth } from './firebase';
+import { getFirebaseAuth, isFirebaseConfigured, FIREBASE_SETUP_MESSAGE } from './firebase';
 import { createOrUpdateUser } from './firebase-services';
 import { getFirebaseErrorMessage } from './firebase-errors';
 
@@ -34,6 +34,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Check if Firebase is configured before attempting initialization
+    if (!isFirebaseConfigured()) {
+      setError(FIREBASE_SETUP_MESSAGE);
+      setLoading(false);
+      return;
+    }
+
     try {
       const auth = getFirebaseAuth();
       
