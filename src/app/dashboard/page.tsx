@@ -367,7 +367,10 @@ export default function Dashboard() {
                     onClick={(e) => {
                       e.stopPropagation();
                       const link = `${baseUrl}/track?id=${tracker.id}`;
-                      navigator.clipboard.writeText(link).then(() => alert('Tracking link copied!'));
+                      navigator.clipboard.writeText(link).then(
+                        () => showMessage('Tracking link copied!'),
+                        () => showMessage('Failed to copy link.', true)
+                      );
                     }}
                     title="Click to copy"
                   >

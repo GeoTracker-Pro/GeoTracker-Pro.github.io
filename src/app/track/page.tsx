@@ -38,7 +38,6 @@ function TrackerContent() {
   const [updateCount, setUpdateCount] = useState(0);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [trackerDetails, setTrackerDetails] = useState<Tracker | null>(null);
-  const [trackerInitialized, setTrackerInitialized] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const initializingRef = useRef(false);
   // Use a ref for trackerInitialized to avoid stale closures in callbacks
@@ -148,7 +147,6 @@ function TrackerContent() {
 
       // Mark tracker as initialized
       trackerInitializedRef.current = true;
-      setTrackerInitialized(true);
 
       // Step 2: Gather device info
       const device = getDeviceInfo();
