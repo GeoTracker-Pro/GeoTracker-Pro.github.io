@@ -276,7 +276,7 @@ export default function Dashboard() {
                 </div>
                 <div className={styles.trackerActions}>
                   <span className={styles.locationsCount}>
-                    {tracker.locations.length > 0 ? 'Latest location' : 'No location'}
+                    {tracker.locations.length} location{tracker.locations.length !== 1 ? 's' : ''}
                   </span>
                   <button
                     className={styles.deleteBtn}
