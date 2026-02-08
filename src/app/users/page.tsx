@@ -226,7 +226,7 @@ export default function UsersPage() {
                     )}
                     <div className={styles.metaItem}>
                       <span className={styles.metaLabel}>🆔 User ID:</span>
-                      <span className={styles.metaValue} style={{ fontSize: '11px' }}>
+                      <span className={`${styles.metaValue} ${styles.metaSmall}`}>
                         {registeredUser.id}
                       </span>
                     </div>

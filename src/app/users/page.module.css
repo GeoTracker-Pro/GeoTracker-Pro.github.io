@@ -248,6 +248,9 @@
 
 .usersList {
   color: #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 .usersList h2 {
@@ -521,4 +524,8 @@
   gap: 15px;
   justify-content: flex-end;
   margin-top: 25px;
+}
+
+.metaSmall {
+  font-size: 11px;
 }
