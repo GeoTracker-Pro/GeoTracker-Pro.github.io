@@ -1,0 +1,13 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "trackers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "created", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

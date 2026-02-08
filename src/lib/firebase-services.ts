@@ -112,15 +112,28 @@ export async function getTrackersFromFirebase(userId?: string): Promise<Tracker[
   try {
     const db = getFirebaseDb();
     const trackersRef = collection(db, TRACKERS_COLLECTION);
-    let q;
+    let snapshot;
+
     if (userId) {
-      q = query(trackersRef, where('userId', '==', userId), orderBy('created', 'desc'));
+      // Try compound query first; if it fails (e.g. missing composite index),
+      // fall back to a simple filter without orderBy and sort client-side.
+      try {
+        const q = query(trackersRef, where('userId', '==', userId), orderBy('created', 'desc'));
+        snapshot = await getDocs(q);
+      } catch {
+        const q = query(trackersRef, where('userId', '==', userId));
+        snapshot = await getDocs(q);
+      }
     } else {
-      q = query(trackersRef, orderBy('created', 'desc'));
+      try {
+        const q = query(trackersRef, orderBy('created', 'desc'));
+        snapshot = await getDocs(q);
+      } catch {
+        snapshot = await getDocs(trackersRef);
+      }
     }
-    const snapshot = await getDocs(q);
     
-    return snapshot.docs.map((doc) => {
+    const trackers = snapshot.docs.map((doc) => {
       const data = doc.data();
       return {
         id: doc.id,
@@ -130,7 +143,15 @@ export async function getTrackersFromFirebase(userId?: string): Promise<Tracker[
         userId: data.userId || null,
       } as Tracker;
     });
+
+    // Sort by created date descending (client-side fallback for when orderBy is unavailable)
+    trackers.sort((a, b) => new Date(b.created).getTime() - new Date(a.created).getTime());
+
+    return trackers;
   } catch (error) {
+    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+      console.error('Error loading trackers:', error);
+    }
     return [];
   }
 }
@@ -155,6 +176,9 @@ export async function getTrackerFromFirebase(trackingId: string): Promise<Tracke
       userId: data.userId || null,
     } as Tracker;
   } catch (error) {
+    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+      console.error('Error getting tracker:', trackingId, error);
+    }
     return null;
   }
 }
@@ -191,6 +215,9 @@ export async function createTrackerInFirebase(name: string, customId?: string, u
       userId: userId || null,
     };
   } catch (error) {
+    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+      console.error('Error creating tracker:', error);
+    }
     return null;
   }
 }
@@ -204,6 +231,9 @@ export async function getOrCreateTrackerInFirebase(trackingId: string, name: str
     }
     return await createTrackerInFirebase(name, trackingId);
   } catch (error) {
+    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+      console.error('Error getting or creating tracker:', trackingId, error);
+    }
     return null;
   }
 }
@@ -213,17 +243,20 @@ export async function addLocationToTrackerInFirebase(trackingId: string, locatio
   try {
     const db = getFirebaseDb();
     // First ensure the tracker exists
-    const tracker = await getTrackerFromFirebase(trackingId);
+    let tracker = await getTrackerFromFirebase(trackingId);
     if (!tracker) {
       // Create the tracker if it doesn't exist
-      await createTrackerInFirebase('Shared Tracker', trackingId);
+      const created = await createTrackerInFirebase('Shared Tracker', trackingId);
+      if (!created) {
+        return false;
+      }
+      tracker = created;
     }
     
     const trackerRef = doc(db, TRACKERS_COLLECTION, trackingId);
     
-    // Get current tracker to append to existing locations
-    const currentTracker = await getTrackerFromFirebase(trackingId);
-    const currentLocations = currentTracker?.locations || [];
+    // Get current locations to append
+    const currentLocations = tracker.locations || [];
     
     // Append new location to the beginning of the array (most recent first)
     await updateDoc(trackerRef, {
@@ -231,6 +264,9 @@ export async function addLocationToTrackerInFirebase(trackingId: string, locatio
     });
     return true;
   } catch (error) {
+    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+      console.error('Error adding location to tracker:', trackingId, error);
+    }
     return false;
   }
 }
@@ -243,6 +279,9 @@ export async function deleteTrackerFromFirebase(trackingId: string): Promise<boo
     await deleteDoc(trackerRef);
     return true;
   } catch (error) {
+    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+      console.error('Error deleting tracker:', trackingId, error);
+    }
     return false;
   }
 }
@@ -285,6 +324,9 @@ export async function createOrUpdateUser(userId: string, email: string, displayN
       };
     }
   } catch (error) {
+    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+      console.error('Error creating/updating user:', userId, error);
+    }
     return null;
   }
 }
@@ -307,6 +349,9 @@ export async function getUsersFromFirebase(): Promise<User[]> {
       } as User;
     });
   } catch (error) {
+    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+      console.error('Error loading users:', error);
+    }
     return [];
   }
 }
@@ -331,6 +376,9 @@ export async function getUserFromFirebase(userId: string): Promise<User | null> 
       lastLoginAt: data.lastLoginAt,
     } as User;
   } catch (error) {
+    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+      console.error('Error getting user:', userId, error);
+    }
     return null;
   }
 }
@@ -343,6 +391,9 @@ export async function deleteUserFromFirebase(userId: string): Promise<boolean> {
     await deleteDoc(userRef);
     return true;
   } catch (error) {
+    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+      console.error('Error deleting user:', userId, error);
+    }
     return false;
   }
 }

@@ -54,6 +54,8 @@ export default function Dashboard() {
         ? await getTrackersAsync()
         : await getTrackersAsync(user.uid);
       setTrackers(storedTrackers);
+    } catch (error) {
+      showMessage('Failed to load trackers. Please try again.', true);
     } finally {
       setLoading(false);
     }
