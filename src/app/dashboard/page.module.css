@@ -527,3 +527,37 @@
   padding: 10px 0;
   letter-spacing: 0.5px;
 }
+
+.exportActions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.searchBox {
+  margin-bottom: 20px;
+}
+
+.searchInput {
+  width: 100%;
+  max-width: 400px;
+  padding: 10px 16px;
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  border-radius: 4px;
+  font-size: 13px;
+  background: rgba(0, 0, 0, 0.5);
+  color: #e0e0e0;
+  font-family: 'Share Tech Mono', monospace;
+  transition: all 0.3s;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #00ff88;
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+}
+
+.searchInput::placeholder {
+  color: #555;
+}
