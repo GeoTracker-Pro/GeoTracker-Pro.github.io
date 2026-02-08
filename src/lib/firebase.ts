@@ -3,6 +3,12 @@ import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getFirestore, Firestore } from 'firebase/firestore';
 import { getAuth, Auth } from 'firebase/auth';
 
+// Shared setup instructions message
+export const FIREBASE_SETUP_MESSAGE =
+  'Firebase is not configured. Please set up your environment variables. ' +
+  'Copy .env.local.example to .env.local and fill in your Firebase project configuration. ' +
+  'See FIREBASE_SETUP.md for detailed instructions.';
+
 // Firebase configuration
 // These values must be provided via environment variables.
 // See .env.local.example for setup instructions.
@@ -52,13 +58,14 @@ let initialized = false;
 let initError: Error | undefined;
 
 function initializeFirebase() {
-  // Skip if already successfully initialized
-  if (initialized && !initError) {
+  // Skip if already attempted initialization
+  if (initialized) {
+    if (initError) {
+      throw initError;
+    }
     return;
   }
 
-  // Reset error state to allow retry
-  initError = undefined;
   initialized = true;
 
   try {
@@ -66,11 +73,7 @@ function initializeFirebase() {
     const validation = validateFirebaseConfig(config);
     
     if (!validation.valid) {
-      initError = new Error(
-        `Firebase configuration is missing required fields: ${validation.missingFields.join(', ')}. ` +
-        'Please copy .env.local.example to .env.local and fill in your Firebase project configuration. ' +
-        'See FIREBASE_SETUP.md for detailed instructions.'
-      );
+      initError = new Error(FIREBASE_SETUP_MESSAGE);
       throw initError;
     }
     

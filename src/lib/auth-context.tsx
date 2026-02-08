@@ -12,7 +12,7 @@ import {
   browserSessionPersistence,
   setPersistence,
 } from 'firebase/auth';
-import { getFirebaseAuth, isFirebaseConfigured } from './firebase';
+import { getFirebaseAuth, isFirebaseConfigured, FIREBASE_SETUP_MESSAGE } from './firebase';
 import { createOrUpdateUser } from './firebase-services';
 import { getFirebaseErrorMessage } from './firebase-errors';
 
@@ -36,11 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Check if Firebase is configured before attempting initialization
     if (!isFirebaseConfigured()) {
-      setError(
-        'Firebase is not configured. Please set up your environment variables. ' +
-        'Copy .env.local.example to .env.local and fill in your Firebase project configuration. ' +
-        'See FIREBASE_SETUP.md for detailed instructions.'
-      );
+      setError(FIREBASE_SETUP_MESSAGE);
       setLoading(false);
       return;
     }
