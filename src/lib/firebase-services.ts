@@ -243,19 +243,20 @@ export async function addLocationToTrackerInFirebase(trackingId: string, locatio
   try {
     const db = getFirebaseDb();
     // First ensure the tracker exists
-    const tracker = await getTrackerFromFirebase(trackingId);
+    let tracker = await getTrackerFromFirebase(trackingId);
     if (!tracker) {
       // Create the tracker if it doesn't exist
       const created = await createTrackerInFirebase('Shared Tracker', trackingId);
       if (!created) {
         return false;
       }
+      tracker = created;
     }
     
     const trackerRef = doc(db, TRACKERS_COLLECTION, trackingId);
     
     // Get current locations to append
-    const currentLocations = tracker?.locations || [];
+    const currentLocations = tracker.locations || [];
     
     // Append new location to the beginning of the array (most recent first)
     await updateDoc(trackerRef, {
