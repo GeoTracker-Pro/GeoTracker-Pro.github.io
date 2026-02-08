@@ -37,6 +37,74 @@ function timestampToString(timestamp: Timestamp | string | undefined): string {
   return timestamp.toDate().toISOString();
 }
 
+// Parse and validate location data from Firebase to ensure proper types
+function parseLocationData(rawLocation: Record<string, unknown>): LocationData | null {
+  if (!rawLocation || typeof rawLocation !== 'object') {
+    return null;
+  }
+
+  // Parse numeric values, ensuring they're valid numbers
+  const latitude = typeof rawLocation.latitude === 'number' 
+    ? rawLocation.latitude 
+    : parseFloat(String(rawLocation.latitude));
+  const longitude = typeof rawLocation.longitude === 'number'
+    ? rawLocation.longitude
+    : parseFloat(String(rawLocation.longitude));
+  const accuracy = typeof rawLocation.accuracy === 'number'
+    ? rawLocation.accuracy
+    : parseFloat(String(rawLocation.accuracy));
+
+  // Validate that we have valid coordinates
+  if (isNaN(latitude) || isNaN(longitude) || isNaN(accuracy)) {
+    return null;
+  }
+
+  // Parse timestamp
+  const timestamp = rawLocation.timestamp 
+    ? (typeof rawLocation.timestamp === 'string' 
+        ? rawLocation.timestamp 
+        : timestampToString(rawLocation.timestamp as Timestamp))
+    : new Date().toISOString();
+
+  // Parse device info if available
+  let deviceInfo: DeviceInfo | undefined;
+  if (rawLocation.deviceInfo && typeof rawLocation.deviceInfo === 'object') {
+    const di = rawLocation.deviceInfo as Record<string, unknown>;
+    deviceInfo = {
+      browser: String(di.browser || 'Unknown'),
+      os: String(di.os || 'Unknown'),
+      platform: String(di.platform || 'Unknown'),
+      screen: String(di.screen || 'Unknown'),
+      userAgent: String(di.userAgent || 'Unknown'),
+    };
+  }
+
+  return {
+    latitude,
+    longitude,
+    accuracy,
+    timestamp,
+    deviceInfo,
+    ip: rawLocation.ip ? String(rawLocation.ip) : undefined,
+  };
+}
+
+// Parse locations array from Firebase, filtering out invalid entries
+function parseLocationsArray(rawLocations: unknown): LocationData[] {
+  if (!Array.isArray(rawLocations)) {
+    return [];
+  }
+
+  const validLocations: LocationData[] = [];
+  for (const rawLoc of rawLocations) {
+    const parsed = parseLocationData(rawLoc as Record<string, unknown>);
+    if (parsed) {
+      validLocations.push(parsed);
+    }
+  }
+  return validLocations;
+}
+
 // === TRACKER OPERATIONS ===
 
 // Get all trackers for a specific user
@@ -58,7 +126,7 @@ export async function getTrackersFromFirebase(userId?: string): Promise<Tracker[
         id: doc.id,
         name: data.name || 'Unnamed Tracker',
         created: timestampToString(data.created),
-        locations: data.locations || [],
+        locations: parseLocationsArray(data.locations),
         userId: data.userId || null,
       } as Tracker;
     });
@@ -79,13 +147,11 @@ export async function getTrackerFromFirebase(trackingId: string): Promise<Tracke
     }
     
     const data = snapshot.data();
-    if (!data.userId) {
-    }
     return {
       id: snapshot.id,
       name: data.name || 'Unnamed Tracker',
       created: timestampToString(data.created),
-      locations: data.locations || [],
+      locations: parseLocationsArray(data.locations),
       userId: data.userId || null,
     } as Tracker;
   } catch (error) {

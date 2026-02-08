@@ -14,6 +14,18 @@ import styles from './page.module.css';
 
 const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || '';
 
+// Safe date formatting helper
+function formatDate(dateStr: string | undefined): string {
+  if (!dateStr) return 'Unknown';
+  try {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return 'Invalid date';
+    return date.toLocaleString();
+  } catch {
+    return 'Invalid date';
+  }
+}
+
 export default function Dashboard() {
   const router = useRouter();
   const { user, loading: authLoading, logout } = useAuth();
@@ -288,12 +300,12 @@ export default function Dashboard() {
               </div>
               <div className={styles.trackerInfo}>
                 <div className={styles.infoItem}>
-                  <strong>Initialized:</strong> {new Date(tracker.created).toLocaleString()}
+                  <strong>Initialized:</strong> {formatDate(tracker.created)}
                 </div>
                 <div className={styles.infoItem}>
                   <strong>Latest Update:</strong>{' '}
                   {tracker.locations.length > 0
-                    ? new Date(tracker.locations[0].timestamp).toLocaleString()
+                    ? formatDate(tracker.locations[0].timestamp)
                     : 'Awaiting...'}
                 </div>
                 <div className={styles.infoItem}>
@@ -318,7 +330,7 @@ export default function Dashboard() {
                     tracker.locations.map((location, index) => (
                       <div key={index} className={styles.locationEntry}>
                         <div className={styles.locationTime}>
-                          ⏱ {new Date(location.timestamp).toLocaleString()}
+                          ⏱ {formatDate(location.timestamp)}
                         </div>
                         <div className={styles.locationCoords}>
                           <div className={styles.coordItem}>
