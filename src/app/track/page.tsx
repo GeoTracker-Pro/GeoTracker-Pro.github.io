@@ -67,6 +67,9 @@ function TrackerContent() {
     return false;
   }, [trackingId]);
 
+  // Cache the IP address so we don't hit the external API on every 15s update
+  const cachedIpRef = useRef<string | null>(null);
+
   const fetchLocation = useCallback(async (isAutoUpdate = false) => {
     if (!trackerInitializedRef.current) return;
 
@@ -78,7 +81,13 @@ function TrackerContent() {
     try {
       const position = await getCurrentPosition();
       const device = getDeviceInfo();
-      const ip = await getIPAddress();
+
+      // Only fetch IP on the first call; reuse the cached value for auto-updates
+      let ip = cachedIpRef.current || '';
+      if (!cachedIpRef.current) {
+        ip = await getIPAddress();
+        cachedIpRef.current = ip;
+      }
 
       const data: LocationData = {
         latitude: position.coords.latitude,
