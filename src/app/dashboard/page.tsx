@@ -83,10 +83,21 @@ export default function Dashboard() {
       return;
     }
 
-    // Sanitize input: remove potentially dangerous characters
-    const sanitizedName = trimmedName.replace(/[<>\"'&]/g, '');
+    // Comprehensive sanitization: only allow alphanumeric, spaces, hyphens, underscores
+    // Remove any potentially dangerous characters
+    const sanitizedName = trimmedName
+      .replace(/[<>\"'`&;(){}[\]\\|]/g, '') // Remove HTML/script injection characters
+      .replace(/[\x00-\x1F\x7F]/g, '') // Remove control characters
+      .replace(/\s+/g, ' ') // Normalize multiple spaces to single space
+      .trim();
+    
     if (sanitizedName !== trimmedName) {
-      showMessage('Tracker name contains invalid characters', true);
+      showMessage('Tracker name contains invalid characters. Only letters, numbers, spaces, hyphens, and underscores are allowed.', true);
+      return;
+    }
+
+    if (!sanitizedName) {
+      showMessage('Tracker name is invalid after sanitization', true);
       return;
     }
 
