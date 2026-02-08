@@ -273,6 +273,26 @@ function sanitizeForFirestore(obj: Record<string, unknown>): Record<string, unkn
   return sanitized;
 }
 
+// Check whether a Firestore error represents a "not-found" document.
+// Firebase SDK may throw either a FirestoreError instance or a plain Error
+// with a code property, so we check both to avoid silently re-throwing
+// not-found errors that should trigger the setDoc fallback.
+function isNotFoundError(error: unknown): boolean {
+  if (error instanceof FirestoreError && error.code === 'not-found') {
+    return true;
+  }
+  // Firebase modular SDK (v9+) may surface errors as plain objects with a
+  // `code` property rather than FirestoreError instances, especially after
+  // tree-shaking. Handle both 'not-found' and the namespaced variant.
+  if (error && typeof error === 'object' && 'code' in error) {
+    const code = (error as { code: unknown }).code;
+    if (code === 'not-found' || code === 'firestore/not-found') {
+      return true;
+    }
+  }
+  return false;
+}
+
 // Add location to tracker (atomically appends to locations array)
 export async function addLocationToTrackerInFirebase(trackingId: string, location: LocationData): Promise<boolean> {
   const db = getFirebaseDb();
@@ -290,23 +310,27 @@ export async function addLocationToTrackerInFirebase(trackingId: string, locatio
   } catch (updateError: unknown) {
     // If the document doesn't exist, updateDoc throws a "not-found" error.
     // In that case, fall through to create the document with the location included.
-    if (!(updateError instanceof FirestoreError && updateError.code === 'not-found')) {
+    if (!isNotFoundError(updateError)) {
       // Re-throw unexpected errors so the caller can handle them
       throw updateError;
     }
   }
 
-  // Document doesn't exist yet — create it with the location already included.
-  // Use merge:true so that if the document was already created (e.g. by the
-  // dashboard with a userId), existing fields like userId and name are preserved
-  // rather than being overwritten. Without merge, a tracker created via the
-  // dashboard (with userId) would lose its userId when the track page adds the
-  // first location, making it invisible to the dashboard's userId-filtered query.
+  // Document doesn't exist yet — create it with minimal metadata, then
+  // atomically append the location via arrayUnion so that we never overwrite
+  // an existing locations array (which would happen with a plain array value
+  // even when using merge:true, because Firestore replaces arrays on merge).
   await setDoc(trackerRef, {
     name: 'Shared Tracker',
     created: serverTimestamp(),
-    locations: [sanitizedLocation],
+    locations: [],
   }, { merge: true });
+
+  // Now append the location atomically. The document is guaranteed to exist
+  // after the setDoc above, so updateDoc will succeed.
+  await updateDoc(trackerRef, {
+    locations: arrayUnion(sanitizedLocation),
+  });
   return true;
 }
 
