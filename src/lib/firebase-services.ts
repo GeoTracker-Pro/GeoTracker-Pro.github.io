@@ -108,11 +108,12 @@ function parseLocationsArray(rawLocations: unknown): LocationData[] {
 
   // Sort by timestamp descending (most recent first) to ensure correct order
   // regardless of whether locations were prepended or appended
-  validLocations.sort((a, b) => 
-    new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-  );
-
-  return validLocations;
+  const withTime = validLocations.map(loc => ({
+    loc,
+    time: new Date(loc.timestamp).getTime(),
+  }));
+  withTime.sort((a, b) => b.time - a.time);
+  return withTime.map(({ loc }) => loc);
 }
 
 // === TRACKER OPERATIONS ===

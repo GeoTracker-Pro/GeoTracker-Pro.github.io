@@ -14,6 +14,7 @@ import {
 import styles from './page.module.css';
 
 const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || '';
+const FALLBACK_POLL_INTERVAL_MS = 30000;
 
 // Safe date formatting helper
 function formatDate(dateStr: string | undefined): string {
@@ -103,7 +104,7 @@ export default function Dashboard() {
       // misses updates (e.g. due to network issues or listener disconnection)
       const pollInterval = setInterval(() => {
         loadTrackersRef.current();
-      }, 30000); // Poll every 30 seconds as a safety net
+      }, FALLBACK_POLL_INTERVAL_MS);
 
       return () => {
         unsubscribe();
