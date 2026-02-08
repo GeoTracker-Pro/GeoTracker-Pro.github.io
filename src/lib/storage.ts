@@ -110,6 +110,8 @@ export async function addLocationToTrackerAsync(trackingId: string, location: Lo
     if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
       console.error('addLocationToTrackerAsync error, falling back to localStorage:', error);
     }
+    // Ensure the tracker exists in localStorage before adding the location
+    getOrCreateTracker(trackingId);
     return addLocationToTracker(trackingId, location);
   }
 }

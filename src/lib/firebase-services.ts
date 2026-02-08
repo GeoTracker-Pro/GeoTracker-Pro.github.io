@@ -249,6 +249,27 @@ export async function getOrCreateTrackerInFirebase(trackingId: string, name: str
   }
 }
 
+// Sanitize an object for Firestore by removing undefined values
+// Firestore does not accept undefined — only null or actual values
+function sanitizeForFirestore(obj: Record<string, unknown>): Record<string, unknown> {
+  const sanitized: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value === undefined) continue;
+    if (Array.isArray(value)) {
+      sanitized[key] = value.map(item =>
+        item !== null && typeof item === 'object' && !Array.isArray(item)
+          ? sanitizeForFirestore(item as Record<string, unknown>)
+          : item
+      );
+    } else if (value !== null && typeof value === 'object') {
+      sanitized[key] = sanitizeForFirestore(value as Record<string, unknown>);
+    } else {
+      sanitized[key] = value;
+    }
+  }
+  return sanitized;
+}
+
 // Add location to tracker (atomically appends to locations array)
 export async function addLocationToTrackerInFirebase(trackingId: string, location: LocationData): Promise<boolean> {
   try {
@@ -265,10 +286,13 @@ export async function addLocationToTrackerInFirebase(trackingId: string, locatio
       }
     }
 
+    // Sanitize location data to remove undefined values (Firestore rejects undefined)
+    const sanitizedLocation = sanitizeForFirestore({ ...location });
+
     // Use arrayUnion for atomic append — avoids reading the entire locations
     // array first, preventing race conditions and reducing write payload size
     await updateDoc(trackerRef, {
-      locations: arrayUnion(location),
+      locations: arrayUnion(sanitizedLocation),
     });
     return true;
   } catch (error) {
