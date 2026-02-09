@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
 import { useTheme } from '@/lib/theme-context';
+import { useNotifications } from '@/lib/notification-context';
 import {
   Tracker,
   getTrackersAsync,
@@ -33,6 +34,7 @@ export default function Dashboard() {
   const router = useRouter();
   const { user, loading: authLoading, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
   const [trackers, setTrackers] = useState<Tracker[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [trackerName, setTrackerName] = useState('');
@@ -43,13 +45,28 @@ export default function Dashboard() {
   const [statusMessage, setStatusMessage] = useState('');
   const [isError, setIsError] = useState(false);
   const [realtimeActive, setRealtimeActive] = useState(false);
+  const [showNotifDropdown, setShowNotifDropdown] = useState(false);
   const unsubscribeRef = useRef<(() => void) | null>(null);
+  const notifBellRef = useRef<HTMLDivElement>(null);
 
   const showMessage = (message: string, error = false) => {
     setStatusMessage(message);
     setIsError(error);
     setTimeout(() => setStatusMessage(''), 3000);
   };
+
+  // Close notification dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (notifBellRef.current && !notifBellRef.current.contains(event.target as Node)) {
+        setShowNotifDropdown(false);
+      }
+    }
+    if (showNotifDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showNotifDropdown]);
 
   const loadTrackers = useCallback(async () => {
     if (!user) return;
@@ -326,6 +343,36 @@ export default function Dashboard() {
     );
   }), [trackers, searchQuery]);
 
+  const getNotifIcon = (type: string) => {
+    switch (type) {
+      case 'success': return '✅';
+      case 'warning': return '⚠️';
+      case 'error': return '❌';
+      case 'geofence': return '📍';
+      case 'tracker': return '📡';
+      default: return 'ℹ️';
+    }
+  };
+
+  const formatNotifTime = (timestamp: string) => {
+    try {
+      const date = new Date(timestamp);
+      const now = new Date();
+      const diffMs = now.getTime() - date.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      if (diffMins < 1) return 'Just now';
+      if (diffMins < 60) return `${diffMins}m ago`;
+      const diffHours = Math.floor(diffMins / 60);
+      if (diffHours < 24) return `${diffHours}h ago`;
+      const diffDays = Math.floor(diffHours / 24);
+      return `${diffDays}d ago`;
+    } catch {
+      return 'Unknown';
+    }
+  };
+
+  const recentNotifications = notifications.slice(0, 5);
+
   if (authLoading || loading) {
     return (
       <div className={styles.dashboardBg}>
@@ -345,6 +392,61 @@ export default function Dashboard() {
             <p className={styles.subtitle}>Surveillance operations dashboard</p>
           </div>
           <div className={styles.headerActions}>
+            <div className={styles.notifBellWrapper} ref={notifBellRef}>
+              <button
+                className={styles.notifBellBtn}
+                onClick={() => setShowNotifDropdown((v) => !v)}
+                aria-label="Notifications"
+                title="Notifications"
+              >
+                🔔
+                {unreadCount > 0 && (
+                  <span className={styles.notifBadge}>{unreadCount > 99 ? '99+' : unreadCount}</span>
+                )}
+              </button>
+              {showNotifDropdown && (
+                <div className={styles.notifDropdown}>
+                  <div className={styles.notifDropdownHeader}>
+                    <span className={styles.notifDropdownTitle}>Notifications</span>
+                    {unreadCount > 0 && (
+                      <button
+                        className={styles.notifMarkAllBtn}
+                        onClick={() => markAllAsRead()}
+                      >
+                        Mark all read
+                      </button>
+                    )}
+                  </div>
+                  <div className={styles.notifDropdownList}>
+                    {recentNotifications.length === 0 ? (
+                      <div className={styles.notifEmpty}>No notifications</div>
+                    ) : (
+                      recentNotifications.map((notif) => (
+                        <div
+                          key={notif.id}
+                          className={`${styles.notifItem} ${!notif.read ? styles.notifUnread : ''}`}
+                          onClick={() => markAsRead(notif.id)}
+                        >
+                          <span className={styles.notifIcon}>{getNotifIcon(notif.type)}</span>
+                          <div className={styles.notifContent}>
+                            <div className={styles.notifItemTitle}>{notif.title}</div>
+                            <div className={styles.notifItemMsg}>{notif.message}</div>
+                            <div className={styles.notifItemTime}>{formatNotifTime(notif.timestamp)}</div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                  <Link
+                    href="/notifications"
+                    className={styles.notifViewAll}
+                    onClick={() => setShowNotifDropdown(false)}
+                  >
+                    View all notifications
+                  </Link>
+                </div>
+              )}
+            </div>
             <button
               onClick={toggleTheme}
               className={styles.themeToggleBtn}
