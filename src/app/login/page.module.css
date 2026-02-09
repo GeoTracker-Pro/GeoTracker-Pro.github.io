@@ -253,3 +253,27 @@
   background: var(--accent-primary-alpha10);
   box-shadow: 0 0 15px var(--shadow-color);
 }
+
+.legalLinks {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+  font-size: 12px;
+}
+
+.legalLinks a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.legalLinks a:hover {
+  color: var(--accent-primary);
+  text-decoration: underline;
+}
+
+.legalLinks span {
+  color: var(--text-secondary);
+}

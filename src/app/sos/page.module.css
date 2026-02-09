@@ -1,0 +1,195 @@
+.sosBg {
+  min-height: 100vh;
+  background: var(--bg-primary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.heading {
+  font-size: 28px;
+  color: #ff3333;
+  font-family: 'Orbitron', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-bottom: 10px;
+  text-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+}
+
+.instructions {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.sosButton {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff0000, #cc0000);
+  border: 4px solid #ff3333;
+  color: white;
+  font-size: 2rem;
+  font-weight: bold;
+  cursor: pointer;
+  animation: sosPulse 2s infinite;
+  transition: transform 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sosButton:hover {
+  transform: scale(1.05);
+}
+
+.sosButton:active {
+  transform: scale(0.95);
+}
+
+.sosButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  animation: none;
+}
+
+@keyframes sosPulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.4); }
+  70% { box-shadow: 0 0 0 20px rgba(255, 0, 0, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+}
+
+.statusMsg {
+  margin-top: 20px;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.statusLoading {
+  color: #ffcc00;
+  background: rgba(255, 204, 0, 0.1);
+  border: 1px solid rgba(255, 204, 0, 0.3);
+}
+
+.statusSuccess {
+  color: #00ff88;
+  background: rgba(0, 255, 136, 0.1);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+}
+
+.statusError {
+  color: #ff3366;
+  background: rgba(255, 51, 102, 0.1);
+  border: 1px solid rgba(255, 51, 102, 0.3);
+}
+
+.resultSection {
+  margin-top: 30px;
+  width: 100%;
+  max-width: 500px;
+}
+
+.coords {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.coords p {
+  color: var(--text-primary);
+  font-size: 14px;
+  margin: 5px 0;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.coords .label {
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.address {
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-color);
+}
+
+.mapContainer {
+  width: 100%;
+  height: 250px;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 15px;
+  border: 1px solid var(--border-color);
+}
+
+.mapContainer iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.actionBtn {
+  padding: 12px 20px;
+  border-radius: 4px;
+  border: 1px solid #ff3333;
+  background: rgba(255, 0, 0, 0.1);
+  color: #ff3333;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-align: center;
+  text-decoration: none;
+  display: block;
+}
+
+.actionBtn:hover {
+  background: rgba(255, 0, 0, 0.2);
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);
+}
+
+.backLink {
+  display: inline-block;
+  margin-top: 30px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 13px;
+  transition: all 0.3s;
+}
+
+.backLink:hover {
+  color: var(--text-primary);
+}
+
+@media (max-width: 768px) {
+  .heading {
+    font-size: 22px;
+  }
+
+  .sosButton {
+    width: 150px;
+    height: 150px;
+    font-size: 1.5rem;
+  }
+
+  .resultSection {
+    max-width: 100%;
+  }
+}

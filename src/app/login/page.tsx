@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
 import { useTheme } from '@/lib/theme-context';
 import { getFirebaseErrorMessage } from '@/lib/firebase-errors';
@@ -162,6 +163,12 @@ export default function LoginPage() {
         >
           {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
         </button>
+
+        <div className={styles.legalLinks}>
+          <Link href="/privacy">Privacy Policy</Link>
+          <span>•</span>
+          <Link href="/terms">Terms of Service</Link>
+        </div>
       </div>
     </div>
   );

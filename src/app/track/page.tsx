@@ -357,6 +357,10 @@ function TrackerContent() {
         <Link href="/login" className={styles.backLink}>
           ← Return to Command Center
         </Link>
+
+        <Link href="/sos" className={styles.sosLink}>
+          🆘 Emergency SOS
+        </Link>
       </div>
     </div>
   );
