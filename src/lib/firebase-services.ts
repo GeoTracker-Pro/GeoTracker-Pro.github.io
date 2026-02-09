@@ -561,20 +561,27 @@ export function subscribeToTrackers(
                 }
                 locations.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
-                // Fall back to array field for backward compatibility when
-                // the sub-collection is empty but the parent doc has data.
-                if (locations.length === 0) {
-                  getDoc(doc(db, TRACKERS_COLLECTION, id)).then(parentSnap => {
-                    const parentData = parentSnap.data();
+                if (locations.length > 0) {
+                  trackerLocations.set(id, locations);
+                  emitUpdate();
+                } else {
+                  // Fall back to array field for backward compatibility when
+                  // the sub-collection is empty but the parent doc has data.
+                  const setFallbackLocations = (parentData?: Record<string, unknown>) => {
                     if (parentData && Array.isArray(parentData.locations) && parentData.locations.length > 0) {
                       trackerLocations.set(id, parseLocationsArray(parentData.locations));
                       emitUpdate();
+                    } else if (!trackerLocations.has(id)) {
+                      trackerLocations.set(id, []);
+                      emitUpdate();
                     }
-                  }).catch(() => { /* ignore */ });
+                  };
+                  getDoc(doc(db, TRACKERS_COLLECTION, id)).then(parentSnap => {
+                    setFallbackLocations(parentSnap.data() as Record<string, unknown> | undefined);
+                  }).catch(() => {
+                    setFallbackLocations();
+                  });
                 }
-
-                trackerLocations.set(id, locations);
-                emitUpdate();
               },
               () => {
                 // On error, try reading the parent document's locations array

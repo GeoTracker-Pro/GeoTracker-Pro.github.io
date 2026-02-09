@@ -522,13 +522,22 @@ export default function Dashboard() {
                         </div>
                       </div>
                     </div>
+                    <div className={styles.mapEmbed}>
+                      <iframe
+                        src={`https://maps.google.com/maps?q=${tracker.locations[0].latitude},${tracker.locations[0].longitude}&z=15&output=embed`}
+                        allowFullScreen
+                        loading="lazy"
+                        title={`Map for ${tracker.name}`}
+                        className={styles.mapIframe}
+                      ></iframe>
+                    </div>
                     <button
                       className="btn btn-success"
                       onClick={(e) =>
                         viewOnMap(tracker.locations[0].latitude, tracker.locations[0].longitude, e)
                       }
                     >
-                      🗺️ View Current Location
+                      🗺️ Open in Google Maps
                     </button>
                   </>
                 ) : (
