@@ -1,18 +1,23 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import {
   LocationData,
   DeviceInfo,
+  generateTrackingId,
   getDeviceInfo,
   getIPAddress,
   getCurrentPosition,
   getGeolocationErrorMessage,
+  getOrCreateTrackerAsync,
+  addLocationToTrackerAsync,
 } from '@/lib/storage';
 import styles from './page.module.css';
 
 type Status = 'loading' | 'success' | 'error';
+
+const SESSION_KEY = 'geotracker_standalone_id';
 
 export default function StandaloneTracker() {
   const [status, setStatus] = useState<Status>('loading');
@@ -20,6 +25,32 @@ export default function StandaloneTracker() {
   const [locationData, setLocationData] = useState<LocationData | null>(null);
   const [deviceInfo, setDeviceInfo] = useState<DeviceInfo | null>(null);
   const [ipAddress, setIpAddress] = useState('Scanning...');
+  const [updateCount, setUpdateCount] = useState(0);
+  const trackingIdRef = useRef<string | null>(null);
+  const trackerReadyRef = useRef(false);
+
+  // Save location data to the database
+  const saveLocationToDatabase = useCallback(async (data: LocationData) => {
+    const id = trackingIdRef.current;
+    if (!id || !trackerReadyRef.current) return false;
+
+    const maxRetries = 3;
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const success = await addLocationToTrackerAsync(id, data);
+        if (success) {
+          setUpdateCount((prev) => prev + 1);
+          return true;
+        }
+      } catch {
+        // Continue to retry
+      }
+      if (attempt < maxRetries) {
+        await new Promise((r) => setTimeout(r, 1000 * Math.pow(2, attempt)));
+      }
+    }
+    return false;
+  }, []);
 
   const fetchLocation = useCallback(async () => {
     setStatus('loading');
@@ -45,7 +76,11 @@ export default function StandaloneTracker() {
       setStatus('success');
       setStatusMessage('Target location acquired');
 
-      // Data available for local debugging if needed
+      // Store location and device info in the database
+      const saved = await saveLocationToDatabase(data);
+      if (!saved && trackerReadyRef.current) {
+        setStatusMessage('Location acquired but failed to sync to server');
+      }
     } catch (error: unknown) {
       if (
         error &&
@@ -62,14 +97,47 @@ export default function StandaloneTracker() {
       }
       setStatus('error');
     }
-  }, []);
+  }, [saveLocationToDatabase]);
+
+  // Keep a ref to fetchLocation so the effect always calls the latest version
+  const fetchLocationRef = useRef(fetchLocation);
+  fetchLocationRef.current = fetchLocation;
 
   useEffect(() => {
+    // Get or create a tracking ID persisted across page refreshes
+    let id: string;
+    try {
+      const stored = sessionStorage.getItem(SESSION_KEY);
+      if (stored) {
+        id = stored;
+      } else {
+        id = generateTrackingId();
+        sessionStorage.setItem(SESSION_KEY, id);
+      }
+    } catch {
+      // sessionStorage may be unavailable in private browsing or restricted contexts
+      id = generateTrackingId();
+    }
+    trackingIdRef.current = id;
+
     const device = getDeviceInfo();
     setDeviceInfo(device);
     getIPAddress().then(setIpAddress);
-    fetchLocation();
-  }, [fetchLocation]);
+
+    // Initialize tracker in the database, then fetch location
+    const init = async () => {
+      try {
+        await getOrCreateTrackerAsync(id);
+      } catch {
+        // Proceed even if tracker init fails; addLocationToTrackerAsync
+        // can create the document on the fly.
+      }
+      trackerReadyRef.current = true;
+      await fetchLocationRef.current();
+    };
+
+    init();
+  }, []);
 
   const mapUrl = locationData
     ? (() => {
