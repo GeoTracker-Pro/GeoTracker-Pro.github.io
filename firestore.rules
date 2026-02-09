@@ -4,6 +4,11 @@ service cloud.firestore {
     // Trackers collection: allow read/write for tracking links (may be unauthenticated)
     match /trackers/{trackerId} {
       allow read, write: if true;
+
+      // Locations sub-collection: allow read/write for tracking data
+      match /locations/{locationId} {
+        allow read, write: if true;
+      }
     }
     // Users collection: only authenticated users
     match /users/{userId} {
