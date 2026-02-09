@@ -14,15 +14,15 @@ import {
   onSnapshot,
   Timestamp,
   serverTimestamp,
-  runTransaction,
+  writeBatch,
   Unsubscribe,
-  FirestoreError,
 } from 'firebase/firestore';
 import { getFirebaseDb } from './firebase';
 import type { DeviceInfo, LocationData, Tracker } from './storage';
 
 // Collection names
 const TRACKERS_COLLECTION = 'trackers';
+const LOCATIONS_SUBCOLLECTION = 'locations';
 const USERS_COLLECTION = 'users';
 
 // User interface
@@ -119,6 +119,32 @@ function parseLocationsArray(rawLocations: unknown): LocationData[] {
 
 // === TRACKER OPERATIONS ===
 
+// Fetch locations from the sub-collection for a single tracker
+async function fetchLocationsForTracker(trackerId: string): Promise<LocationData[]> {
+  const db = getFirebaseDb();
+  const locationsRef = collection(db, TRACKERS_COLLECTION, trackerId, LOCATIONS_SUBCOLLECTION);
+  try {
+    const q = query(locationsRef, orderBy('timestamp', 'desc'));
+    const snapshot = await getDocs(q);
+    const locations: LocationData[] = [];
+    for (const docSnap of snapshot.docs) {
+      const parsed = parseLocationData(docSnap.data() as Record<string, unknown>);
+      if (parsed) locations.push(parsed);
+    }
+    return locations;
+  } catch {
+    // If orderBy fails (missing index), fetch all and sort client-side
+    const snapshot = await getDocs(locationsRef);
+    const locations: LocationData[] = [];
+    for (const docSnap of snapshot.docs) {
+      const parsed = parseLocationData(docSnap.data() as Record<string, unknown>);
+      if (parsed) locations.push(parsed);
+    }
+    locations.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    return locations;
+  }
+}
+
 // Get all trackers for a specific user
 export async function getTrackersFromFirebase(userId?: string): Promise<Tracker[]> {
   try {
@@ -145,16 +171,23 @@ export async function getTrackersFromFirebase(userId?: string): Promise<Tracker[
       }
     }
     
-    const trackers = snapshot.docs.map((doc) => {
-      const data = doc.data();
-      return {
-        id: doc.id,
+    const trackers: Tracker[] = [];
+    for (const docSnap of snapshot.docs) {
+      const data = docSnap.data();
+      // Read locations from sub-collection, falling back to array field for
+      // backward compatibility with trackers created before the migration.
+      let locations = await fetchLocationsForTracker(docSnap.id);
+      if (locations.length === 0 && Array.isArray(data.locations) && data.locations.length > 0) {
+        locations = parseLocationsArray(data.locations);
+      }
+      trackers.push({
+        id: docSnap.id,
         name: data.name || 'Unnamed Tracker',
         created: timestampToString(data.created),
-        locations: parseLocationsArray(data.locations),
+        locations,
         userId: data.userId || null,
-      } as Tracker;
-    });
+      });
+    }
 
     // Sort by created date descending (client-side fallback for when orderBy is unavailable)
     trackers.sort((a, b) => new Date(b.created).getTime() - new Date(a.created).getTime());
@@ -180,11 +213,16 @@ export async function getTrackerFromFirebase(trackingId: string): Promise<Tracke
     }
     
     const data = snapshot.data();
+    // Read locations from sub-collection, falling back to array field
+    let locations = await fetchLocationsForTracker(trackingId);
+    if (locations.length === 0 && Array.isArray(data.locations) && data.locations.length > 0) {
+      locations = parseLocationsArray(data.locations);
+    }
     return {
       id: snapshot.id,
       name: data.name || 'Unnamed Tracker',
       created: timestampToString(data.created),
-      locations: parseLocationsArray(data.locations),
+      locations,
       userId: data.userId || null,
     } as Tracker;
   } catch (error) {
@@ -202,7 +240,6 @@ export async function createTrackerInFirebase(name: string, customId?: string, u
     const trackerData: Record<string, unknown> = {
       name: name || 'Unnamed Tracker',
       created: serverTimestamp(),
-      locations: [],
     };
     
     if (userId) {
@@ -283,90 +320,54 @@ function sanitizeForFirestore(obj: Record<string, unknown>): Record<string, unkn
   return sanitized;
 }
 
-// Check whether a Firestore error represents a "not-found" document.
-// Firebase SDK may throw either a FirestoreError instance or a plain Error
-// with a code property, so we check both to avoid silently re-throwing
-// not-found errors that should trigger the setDoc fallback.
-function isNotFoundError(error: unknown): boolean {
-  if (error instanceof FirestoreError && error.code === 'not-found') {
-    return true;
-  }
-  // Firebase modular SDK (v9+) may surface errors as plain objects with a
-  // `code` property rather than FirestoreError instances, especially after
-  // tree-shaking. Handle both 'not-found' and the namespaced variant.
-  if (error && typeof error === 'object' && 'code' in error) {
-    const code = (error as { code: unknown }).code;
-    if (code === 'not-found' || code === 'firestore/not-found') {
-      return true;
-    }
-  }
-  // Some Firebase SDK versions include "not-found" or "No document to update"
-  // in the error message without setting a proper code.
-  if (error && typeof error === 'object' && 'message' in error) {
-    const message = String((error as Error).message).toLowerCase();
-    if (message.includes('not-found') || message.includes('no document to update')) {
-      return true;
-    }
-  }
-  return false;
-}
-
-// Add location to tracker using a Firestore transaction for reliable writes.
-// arrayUnion() can silently deduplicate complex objects (e.g. when nested
-// deviceInfo fields produce identical serializations), causing locations to
-// appear missing on the dashboard.  A transaction reads the current array,
-// appends the new entry, and writes it back atomically — guaranteeing that
-// every location update is persisted.
+// Add location to tracker using a Firestore sub-collection for reliable writes.
+// Each location is stored as a separate document in the
+// `trackers/{trackerId}/locations` sub-collection.  This avoids the 1 MiB
+// document size limit and eliminates transaction conflicts that occurred when
+// all locations were stored in a single array field.
 export async function addLocationToTrackerInFirebase(trackingId: string, location: LocationData): Promise<boolean> {
   const db = getFirebaseDb();
-  const trackerRef = doc(db, TRACKERS_COLLECTION, trackingId);
 
   // Sanitize location data to remove undefined values (Firestore rejects undefined)
   const sanitizedLocation = sanitizeForFirestore({ ...location });
 
-  // Attempt the transaction up to 2 times to handle transient failures
-  let lastError: unknown;
-  for (let attempt = 0; attempt < 2; attempt++) {
-    try {
-      await runTransaction(db, async (transaction) => {
-        const snapshot = await transaction.get(trackerRef);
+  try {
+    // Ensure the parent tracker document exists.  Use merge so we don't
+    // overwrite fields like name or userId that may already be set. Only set
+    // the name for a brand-new document; the merge will leave the field
+    // untouched if it already exists.
+    const trackerRef = doc(db, TRACKERS_COLLECTION, trackingId);
+    await setDoc(trackerRef, { name: 'Shared Tracker' }, { merge: true });
 
-        if (snapshot.exists()) {
-          // Document exists — append the new location to the existing array
-          const data = snapshot.data();
-          const existingLocations: unknown[] = Array.isArray(data.locations) ? data.locations : [];
-          transaction.update(trackerRef, {
-            locations: [...existingLocations, sanitizedLocation],
-          });
-        } else {
-          // Document doesn't exist yet — create it with the location included
-          transaction.set(trackerRef, {
-            name: 'Shared Tracker',
-            created: serverTimestamp(),
-            locations: [sanitizedLocation],
-          });
-        }
-      });
-      return true;
-    } catch (error) {
-      lastError = error;
-      // Brief pause before retrying
-      if (attempt < 1) {
-        await new Promise((r) => setTimeout(r, 500));
-      }
+    // Add location as a new document in the sub-collection
+    const locationsRef = collection(db, TRACKERS_COLLECTION, trackingId, LOCATIONS_SUBCOLLECTION);
+    await addDoc(locationsRef, sanitizedLocation);
+    return true;
+  } catch (error) {
+    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+      console.error('addLocationToTrackerInFirebase: write failed:', error);
     }
+    throw error;
   }
-
-  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-    console.error('addLocationToTrackerInFirebase: transaction failed after retries:', lastError);
-  }
-  throw lastError;
 }
 
-// Delete a tracker
+// Delete a tracker and its locations sub-collection
 export async function deleteTrackerFromFirebase(trackingId: string): Promise<boolean> {
   try {
     const db = getFirebaseDb();
+
+    // Delete all location documents in the sub-collection first
+    const locationsRef = collection(db, TRACKERS_COLLECTION, trackingId, LOCATIONS_SUBCOLLECTION);
+    const locSnapshot = await getDocs(locationsRef);
+    if (!locSnapshot.empty) {
+      const batch = writeBatch(db);
+      for (const locDoc of locSnapshot.docs) {
+        batch.delete(locDoc.ref);
+      }
+      await batch.commit();
+    }
+
+    // Delete the tracker document
     const trackerRef = doc(db, TRACKERS_COLLECTION, trackingId);
     await deleteDoc(trackerRef);
     return true;
@@ -493,6 +494,9 @@ export async function deleteUserFromFirebase(userId: string): Promise<boolean> {
 // === REAL-TIME LISTENERS ===
 
 // Subscribe to real-time tracker updates for a user (or all trackers for admin)
+// Sets up a listener on the trackers collection and individual listeners on
+// each tracker's locations sub-collection so the dashboard updates immediately
+// when a new location arrives.
 export function subscribeToTrackers(
   onUpdate: (trackers: Tracker[]) => void,
   onError: (error: Error) => void,
@@ -509,26 +513,98 @@ export function subscribeToTrackers(
       q = query(trackersRef);
     }
 
-    return onSnapshot(
+    // Keep track of per-tracker location listeners and their latest data
+    const locationUnsubscribes = new Map<string, Unsubscribe>();
+    const trackerLocations = new Map<string, LocationData[]>();
+    const trackerMeta = new Map<string, { name: string; created: string; userId: string | null }>();
+
+    function emitUpdate() {
+      const trackers: Tracker[] = [];
+      for (const [id, meta] of trackerMeta.entries()) {
+        trackers.push({
+          id,
+          name: meta.name,
+          created: meta.created,
+          locations: trackerLocations.get(id) || [],
+          userId: meta.userId,
+        });
+      }
+      trackers.sort((a, b) => new Date(b.created).getTime() - new Date(a.created).getTime());
+      onUpdate(trackers);
+    }
+
+    const trackersUnsub = onSnapshot(
       q,
       (snapshot) => {
-        const trackers = snapshot.docs.map((docSnap) => {
+        const currentIds = new Set<string>();
+
+        for (const docSnap of snapshot.docs) {
+          const id = docSnap.id;
+          currentIds.add(id);
           const data = docSnap.data();
-          return {
-            id: docSnap.id,
+          trackerMeta.set(id, {
             name: data.name || 'Unnamed Tracker',
             created: timestampToString(data.created),
-            locations: parseLocationsArray(data.locations),
             userId: data.userId || null,
-          } as Tracker;
-        });
+          });
 
-        // Sort by created date descending (most recent first)
-        trackers.sort(
-          (a, b) => new Date(b.created).getTime() - new Date(a.created).getTime()
-        );
+          // Set up a sub-collection listener if we don't have one already
+          if (!locationUnsubscribes.has(id)) {
+            const locRef = collection(db, TRACKERS_COLLECTION, id, LOCATIONS_SUBCOLLECTION);
+            const unsub = onSnapshot(
+              locRef,
+              (locSnapshot) => {
+                const locations: LocationData[] = [];
+                for (const locDoc of locSnapshot.docs) {
+                  const parsed = parseLocationData(locDoc.data() as Record<string, unknown>);
+                  if (parsed) locations.push(parsed);
+                }
+                locations.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
-        onUpdate(trackers);
+                // Fall back to array field for backward compatibility when
+                // the sub-collection is empty but the parent doc has data.
+                if (locations.length === 0) {
+                  getDoc(doc(db, TRACKERS_COLLECTION, id)).then(parentSnap => {
+                    const parentData = parentSnap.data();
+                    if (parentData && Array.isArray(parentData.locations) && parentData.locations.length > 0) {
+                      trackerLocations.set(id, parseLocationsArray(parentData.locations));
+                      emitUpdate();
+                    }
+                  }).catch(() => { /* ignore */ });
+                }
+
+                trackerLocations.set(id, locations);
+                emitUpdate();
+              },
+              () => {
+                // On error, try reading the parent document's locations array
+                // as a fallback
+                getDoc(doc(db, TRACKERS_COLLECTION, id)).then(parentSnap => {
+                  const parentData = parentSnap.data();
+                  if (parentData && Array.isArray(parentData.locations) && parentData.locations.length > 0) {
+                    trackerLocations.set(id, parseLocationsArray(parentData.locations));
+                  }
+                  emitUpdate();
+                }).catch(() => {
+                  emitUpdate();
+                });
+              }
+            );
+            locationUnsubscribes.set(id, unsub);
+          }
+        }
+
+        // Clean up listeners for removed trackers
+        for (const [id, unsub] of locationUnsubscribes.entries()) {
+          if (!currentIds.has(id)) {
+            unsub();
+            locationUnsubscribes.delete(id);
+            trackerLocations.delete(id);
+            trackerMeta.delete(id);
+          }
+        }
+
+        emitUpdate();
       },
       (error) => {
         if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
@@ -537,6 +613,17 @@ export function subscribeToTrackers(
         onError(error instanceof Error ? error : new Error('Subscription error'));
       }
     );
+
+    // Return cleanup function that tears down all listeners
+    return () => {
+      trackersUnsub();
+      for (const unsub of locationUnsubscribes.values()) {
+        unsub();
+      }
+      locationUnsubscribes.clear();
+      trackerLocations.clear();
+      trackerMeta.clear();
+    };
   } catch (error) {
     if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
       console.error('Error setting up tracker subscription:', error);
