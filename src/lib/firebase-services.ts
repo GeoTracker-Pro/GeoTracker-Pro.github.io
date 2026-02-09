@@ -14,7 +14,7 @@ import {
   onSnapshot,
   Timestamp,
   serverTimestamp,
-  arrayUnion,
+  runTransaction,
   Unsubscribe,
   FirestoreError,
 } from 'firebase/firestore';
@@ -311,7 +311,12 @@ function isNotFoundError(error: unknown): boolean {
   return false;
 }
 
-// Add location to tracker (atomically appends to locations array)
+// Add location to tracker using a Firestore transaction for reliable writes.
+// arrayUnion() can silently deduplicate complex objects (e.g. when nested
+// deviceInfo fields produce identical serializations), causing locations to
+// appear missing on the dashboard.  A transaction reads the current array,
+// appends the new entry, and writes it back atomically — guaranteeing that
+// every location update is persisted.
 export async function addLocationToTrackerInFirebase(trackingId: string, location: LocationData): Promise<boolean> {
   const db = getFirebaseDb();
   const trackerRef = doc(db, TRACKERS_COLLECTION, trackingId);
@@ -319,32 +324,43 @@ export async function addLocationToTrackerInFirebase(trackingId: string, locatio
   // Sanitize location data to remove undefined values (Firestore rejects undefined)
   const sanitizedLocation = sanitizeForFirestore({ ...location });
 
-  // First, try atomic append with updateDoc (fastest path when document exists)
-  try {
-    await updateDoc(trackerRef, {
-      locations: arrayUnion(sanitizedLocation),
-    });
-    return true;
-  } catch (updateError: unknown) {
-    // If the document doesn't exist, updateDoc throws a "not-found" error.
-    // In that case, fall through to create the document with the location included.
-    if (!isNotFoundError(updateError)) {
-      // Re-throw unexpected errors so the caller can handle them
-      throw updateError;
+  // Attempt the transaction up to 2 times to handle transient failures
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      await runTransaction(db, async (transaction) => {
+        const snapshot = await transaction.get(trackerRef);
+
+        if (snapshot.exists()) {
+          // Document exists — append the new location to the existing array
+          const data = snapshot.data();
+          const existingLocations: unknown[] = Array.isArray(data.locations) ? data.locations : [];
+          transaction.update(trackerRef, {
+            locations: [...existingLocations, sanitizedLocation],
+          });
+        } else {
+          // Document doesn't exist yet — create it with the location included
+          transaction.set(trackerRef, {
+            name: 'Shared Tracker',
+            created: serverTimestamp(),
+            locations: [sanitizedLocation],
+          });
+        }
+      });
+      return true;
+    } catch (error) {
+      lastError = error;
+      // Brief pause before retrying
+      if (attempt < 1) {
+        await new Promise((r) => setTimeout(r, 500));
+      }
     }
   }
 
-  // Document doesn't exist yet — create it with the location included directly.
-  // Use setDoc with merge:true to avoid overwriting any fields that may have been
-  // set concurrently. We include the location in the initial array since there is
-  // no existing array to conflict with.
-  await setDoc(trackerRef, {
-    name: 'Shared Tracker',
-    created: serverTimestamp(),
-    locations: [sanitizedLocation],
-  }, { merge: true });
-
-  return true;
+  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+    console.error('addLocationToTrackerInFirebase: transaction failed after retries:', lastError);
+  }
+  throw lastError;
 }
 
 // Delete a tracker

@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth-context';
 import {
   Tracker,
   getTrackersAsync,
+  getTrackerAsync,
   createTrackerAsync,
   deleteTrackerAsync,
   subscribeToTrackersRealtime,
@@ -207,6 +208,21 @@ export default function Dashboard() {
       router.push('/login');
     } catch (error) {
       showMessage('Failed to logout. Please try again.', true);
+    }
+  };
+
+  const handleRefreshTracker = async (trackerId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const updated = await getTrackerAsync(trackerId);
+      if (updated) {
+        setTrackers((prev) =>
+          prev.map((t) => (t.id === trackerId ? updated : t))
+        );
+        showMessage('Tracker data refreshed!');
+      }
+    } catch {
+      showMessage('Failed to refresh tracker data.', true);
     }
   };
 
@@ -516,9 +532,16 @@ export default function Dashboard() {
                     </button>
                   </>
                 ) : (
-                  <p className={styles.awaitingData}>
-                    📡 No location data received yet. Share the tracking link to begin receiving coordinates.
-                  </p>
+                  <div className={styles.awaitingData}>
+                    <p>📡 No location data received yet. Share the tracking link to begin receiving coordinates.</p>
+                    <button
+                      className="btn btn-secondary"
+                      onClick={(e) => handleRefreshTracker(tracker.id, e)}
+                      style={{ marginTop: '8px' }}
+                    >
+                      🔄 Refresh Data
+                    </button>
+                  </div>
                 )}
               </div>
 
