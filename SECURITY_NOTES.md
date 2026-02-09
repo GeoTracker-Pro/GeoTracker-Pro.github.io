@@ -9,7 +9,7 @@ This document outlines the security issues that were identified and fixed in the
 **Current State**: Firebase credentials are now configured with secure defaults and environment variable support.
 
 **Implementation**: 
-- Added hardcoded fallback values for the geotracker-865d3 Firebase project in `src/lib/firebase.ts`
+- Added hardcoded fallback values for the geotrackerpro-e3149 Firebase project in `src/lib/firebase.ts`
 - Environment variables can override defaults for custom Firebase projects
 - Created `.env.local` with configuration values (gitignored)
 - Updated `.env.local.example` with example values

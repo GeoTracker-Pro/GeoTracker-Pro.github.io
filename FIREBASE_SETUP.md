@@ -10,7 +10,7 @@ If you're seeing this error, it means Firebase Authentication is not properly en
 
 - A Google account
 - Access to [Firebase Console](https://console.firebase.google.com/)
-- The Firebase project ID: `geotracker-865d3`
+- The Firebase project ID: `geotrackerpro-e3149`
 
 ## 🚀 Step-by-Step Setup
 
@@ -18,7 +18,7 @@ If you're seeing this error, it means Firebase Authentication is not properly en
 
 1. Go to [Firebase Console](https://console.firebase.google.com/)
 2. Sign in with your Google account
-3. Select the project `geotracker-865d3` (or create it if it doesn't exist)
+3. Select the project `geotrackerpro-e3149` (or create it if it doesn't exist)
 
 ### 2. Enable Firebase Authentication
 
@@ -96,13 +96,13 @@ Your Firebase configuration in `src/lib/firebase.ts` should already have these v
 
 ```javascript
 {
-  apiKey: "AIzaSyDIHDGN0nAx1CpLCurSQj3TYlR1AwZmu6g",
-  authDomain: "geotracker-865d3.firebaseapp.com",
-  projectId: "geotracker-865d3",
-  storageBucket: "geotracker-865d3.firebasestorage.app",
-  messagingSenderId: "881736898997",
-  appId: "1:881736898997:web:038371eeb1f9e1a54ce1fc",
-  measurementId: "G-TTHVMZNDX4"
+  apiKey: "AIzaSyALuk1ujZBLTWMCJJ6ebT9DdH9CtYwVJ6I",
+  authDomain: "geotrackerpro-e3149.firebaseapp.com",
+  projectId: "geotrackerpro-e3149",
+  storageBucket: "geotrackerpro-e3149.firebasestorage.app",
+  messagingSenderId: "948578635618",
+  appId: "1:948578635618:web:803ddf06141f602dd7a63b",
+  measurementId: "G-23B0643XX7"
 }
 ```
 

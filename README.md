@@ -68,7 +68,7 @@ npm install
 cp .env.local.example .env.local
 ```
 
-Edit `.env.local` and set your Firebase configuration values. The example file includes default values for the geotracker-865d3 project. See [Configuration](#-configuration) section below for more details.
+Edit `.env.local` and set your Firebase configuration values. The example file includes default values for the geotrackerpro-e3149 project. See [Configuration](#-configuration) section below for more details.
 
 4. **Start the development server**
 ```bash
@@ -317,7 +317,7 @@ service cloud.firestore {
 
 **Quick Fix:**
 1. Go to [Firebase Console](https://console.firebase.google.com/)
-2. Open project `geotracker-865d3`
+2. Open project `geotrackerpro-e3149`
 3. Enable Authentication (click "Get Started" if needed)
 4. Enable **Email/Password** sign-in method
 5. Enable **Anonymous** sign-in method

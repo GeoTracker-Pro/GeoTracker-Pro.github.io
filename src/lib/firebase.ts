@@ -11,7 +11,7 @@ export const FIREBASE_SETUP_MESSAGE =
 
 // Firebase configuration
 // These values can be provided via environment variables or use the defaults below.
-// The default configuration is for the geotracker-865d3 Firebase project.
+// The default configuration is for the geotrackerpro-e3149 Firebase project.
 // 
 // SECURITY NOTE: Firebase client credentials (API keys, project IDs) are designed 
 // to be public and safe to include in client-side code. They are not secrets.
@@ -26,13 +26,13 @@ export const FIREBASE_SETUP_MESSAGE =
 // To use a custom Firebase project, set environment variables in .env.local
 function getFirebaseConfig() {
   return {
-    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyDIHDGN0nAx1CpLCurSQj3TYlR1AwZmu6g",
-    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "geotracker-865d3.firebaseapp.com",
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "geotracker-865d3",
-    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "geotracker-865d3.firebasestorage.app",
-    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "881736898997",
-    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:881736898997:web:038371eeb1f9e1a54ce1fc",
-    measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "G-TTHVMZNDX4"
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyALuk1ujZBLTWMCJJ6ebT9DdH9CtYwVJ6I",
+    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "geotrackerpro-e3149.firebaseapp.com",
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "geotrackerpro-e3149",
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "geotrackerpro-e3149.firebasestorage.app",
+    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "948578635618",
+    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:948578635618:web:803ddf06141f602dd7a63b",
+    measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "G-23B0643XX7"
   };
 }
 
