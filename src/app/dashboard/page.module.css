@@ -15,7 +15,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(5, 5, 16, 0.95) 0%, rgba(10, 10, 26, 0.92) 100%);
+  background: linear-gradient(135deg, var(--overlay-bg) 0%, var(--overlay-bg-alt) 100%);
   pointer-events: none;
   z-index: 0;
 }
@@ -26,13 +26,13 @@
 }
 
 .header {
-  background: rgba(10, 10, 26, 0.9);
-  color: white;
+  background: var(--bg-card);
+  color: var(--text-primary);
   padding: 20px 30px;
   border-radius: 8px;
   margin-bottom: 30px;
-  box-shadow: 0 0 30px rgba(0, 255, 136, 0.2);
-  border: 1px solid rgba(0, 255, 136, 0.3);
+  box-shadow: 0 0 30px var(--shadow-color);
+  border: 1px solid var(--border-color);
   backdrop-filter: blur(10px);
 }
 
@@ -48,16 +48,16 @@
   font-size: 24px;
   margin-bottom: 5px;
   font-family: 'Orbitron', sans-serif;
-  color: #00ff88;
+  color: var(--accent-primary);
   text-transform: uppercase;
   letter-spacing: 2px;
-  text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+  text-shadow: 0 0 20px var(--shadow-color);
 }
 
 .subtitle {
   opacity: 0.8;
   font-size: 13px;
-  color: #888;
+  color: var(--text-secondary);
   letter-spacing: 1px;
 }
 
@@ -69,36 +69,36 @@
 }
 
 .userInfo {
-  background: rgba(0, 255, 136, 0.1);
+  background: var(--accent-primary-alpha10);
   padding: 8px 16px;
   border-radius: 4px;
   font-size: 12px;
-  color: #00ff88;
-  border: 1px solid rgba(0, 255, 136, 0.3);
+  color: var(--accent-primary);
+  border: 1px solid var(--border-color);
   font-family: 'Share Tech Mono', monospace;
 }
 
 .navLink {
-  color: #00ccff;
+  color: var(--accent-secondary);
   text-decoration: none;
   font-size: 12px;
   padding: 8px 16px;
-  background: rgba(0, 204, 255, 0.1);
-  border: 1px solid rgba(0, 204, 255, 0.3);
+  background: var(--accent-secondary-alpha10);
+  border: 1px solid var(--accent-secondary-alpha30);
   border-radius: 4px;
   transition: all 0.3s;
   font-family: 'Share Tech Mono', monospace;
 }
 
 .navLink:hover {
-  background: rgba(0, 204, 255, 0.2);
-  box-shadow: 0 0 15px rgba(0, 204, 255, 0.3);
+  background: var(--accent-secondary-alpha20);
+  box-shadow: 0 0 15px var(--shadow-color);
 }
 
 .logoutBtn {
-  background: rgba(255, 51, 102, 0.1);
-  color: #ff3366;
-  border: 1px solid rgba(255, 51, 102, 0.3);
+  background: var(--danger-alpha10);
+  color: var(--error-color);
+  border: 1px solid var(--danger-alpha30);
   padding: 8px 16px;
   border-radius: 4px;
   cursor: pointer;
@@ -108,22 +108,22 @@
 }
 
 .logoutBtn:hover {
-  background: rgba(255, 51, 102, 0.2);
-  box-shadow: 0 0 15px rgba(255, 51, 102, 0.3);
+  background: var(--danger-alpha10);
+  box-shadow: 0 0 15px var(--danger-alpha30);
 }
 
 .createTracker {
-  background: rgba(10, 10, 26, 0.9);
+  background: var(--bg-card);
   padding: 30px;
   border-radius: 8px;
   margin-bottom: 30px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(0, 255, 136, 0.2);
+  border: 1px solid var(--border-color);
   backdrop-filter: blur(10px);
 }
 
 .createTracker h2 {
-  color: #00ff88;
+  color: var(--accent-primary);
   margin-bottom: 20px;
   font-family: 'Orbitron', sans-serif;
   font-size: 16px;
@@ -137,7 +137,7 @@
 
 .formGroup label {
   display: block;
-  color: #888;
+  color: var(--text-secondary);
   margin-bottom: 8px;
   font-weight: 500;
   font-size: 12px;
@@ -148,35 +148,35 @@
 .input {
   width: 100%;
   padding: 12px;
-  border: 1px solid rgba(0, 255, 136, 0.3);
+  border: 1px solid var(--input-border);
   border-radius: 4px;
   font-size: 14px;
   transition: all 0.3s;
-  background: rgba(0, 0, 0, 0.5);
-  color: #e0e0e0;
+  background: var(--input-bg);
+  color: var(--text-primary);
   font-family: 'Share Tech Mono', monospace;
 }
 
 .input:focus {
   outline: none;
-  border-color: #00ff88;
-  box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 15px var(--shadow-color);
 }
 
 .input::placeholder {
-  color: #555;
+  color: var(--placeholder-color);
 }
 
 .generatedLink {
   margin-top: 20px;
   padding: 20px;
-  background: rgba(0, 255, 136, 0.1);
-  border: 1px solid rgba(0, 255, 136, 0.3);
+  background: var(--accent-primary-alpha10);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
 }
 
 .generatedLink h3 {
-  color: #00ff88;
+  color: var(--accent-primary);
   margin-bottom: 10px;
   font-family: 'Orbitron', sans-serif;
   font-size: 14px;
@@ -185,34 +185,34 @@
 }
 
 .generatedLink p {
-  color: #888;
+  color: var(--text-secondary);
   font-size: 13px;
   margin-bottom: 10px;
 }
 
 .linkText {
   font-family: 'Share Tech Mono', monospace;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--input-bg);
   padding: 15px;
   border-radius: 4px;
   word-break: break-all;
   margin: 15px 0;
-  color: #00ccff;
-  border: 1px solid rgba(0, 204, 255, 0.3);
+  color: var(--accent-secondary);
+  border: 1px solid var(--accent-secondary-alpha30);
   font-size: 13px;
 }
 
 .trackersList {
-  background: rgba(10, 10, 26, 0.9);
+  background: var(--bg-card);
   padding: 30px;
   border-radius: 8px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(0, 255, 136, 0.2);
+  border: 1px solid var(--border-color);
   backdrop-filter: blur(10px);
 }
 
 .trackersList h2 {
-  color: #00ff88;
+  color: var(--accent-primary);
   margin-bottom: 20px;
   font-family: 'Orbitron', sans-serif;
   font-size: 16px;
@@ -221,22 +221,22 @@
 }
 
 .trackerCard {
-  background: rgba(0, 255, 136, 0.03);
+  background: var(--card-subtle-bg);
   padding: 20px;
   border-radius: 4px;
   margin-bottom: 15px;
-  border-left: 3px solid #00ff88;
-  border-top: 1px solid rgba(0, 255, 136, 0.1);
-  border-right: 1px solid rgba(0, 255, 136, 0.1);
-  border-bottom: 1px solid rgba(0, 255, 136, 0.1);
+  border-left: 3px solid var(--accent-primary);
+  border-top: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
   cursor: pointer;
   transition: all 0.3s;
 }
 
 .trackerCard:hover {
   transform: translateX(5px);
-  box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
-  background: rgba(0, 255, 136, 0.05);
+  box-shadow: 0 0 20px var(--shadow-color);
+  background: var(--card-hover-bg);
 }
 
 .trackerHeader {
@@ -249,7 +249,7 @@
 .trackerName {
   font-size: 16px;
   font-weight: 600;
-  color: #00ff88;
+  color: var(--accent-primary);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -258,7 +258,7 @@
 
 .inactiveTag {
   font-size: 10px;
-  background: #ff3366;
+  background: var(--error-color);
   color: white;
   padding: 2px 8px;
   border-radius: 4px;
@@ -269,14 +269,14 @@
 
 .trackerId {
   font-size: 11px;
-  color: #666;
+  color: var(--muted-text);
   font-family: 'Share Tech Mono', monospace;
   margin-top: 5px;
 }
 
 .createdBy {
   font-size: 11px;
-  color: #555;
+  color: var(--muted-text-alt);
   margin-top: 4px;
 }
 
@@ -288,30 +288,30 @@
 
 .locationsCount {
   display: inline-block;
-  background: rgba(0, 204, 255, 0.2);
-  color: #00ccff;
+  background: var(--accent-secondary-alpha20);
+  color: var(--accent-secondary);
   padding: 4px 12px;
   border-radius: 4px;
   font-size: 11px;
   font-weight: 600;
-  border: 1px solid rgba(0, 204, 255, 0.3);
+  border: 1px solid var(--accent-secondary-alpha30);
   font-family: 'Share Tech Mono', monospace;
 }
 
 .deleteBtn {
   background: transparent;
-  border: 1px solid rgba(255, 51, 102, 0.3);
+  border: 1px solid var(--danger-alpha30);
   cursor: pointer;
   font-size: 16px;
   padding: 5px 10px;
   border-radius: 4px;
   transition: all 0.3s;
-  color: #ff3366;
+  color: var(--error-color);
 }
 
 .deleteBtn:hover {
-  background: rgba(255, 51, 102, 0.1);
-  box-shadow: 0 0 10px rgba(255, 51, 102, 0.3);
+  background: var(--danger-alpha10);
+  box-shadow: 0 0 10px var(--danger-alpha30);
 }
 
 .trackerInfo {
@@ -323,30 +323,30 @@
 
 .infoItem {
   font-size: 12px;
-  color: #888;
+  color: var(--text-secondary);
 }
 
 .infoItem strong {
-  color: #aaa;
+  color: var(--text-primary);
 }
 
 .trackerDetails {
   margin-top: 20px;
   padding-top: 20px;
-  border-top: 1px solid rgba(0, 255, 136, 0.2);
+  border-top: 1px solid var(--divider-color);
 }
 
 .locationEntry {
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--card-subtle-bg);
   padding: 15px;
   border-radius: 4px;
   margin-bottom: 10px;
-  border: 1px solid rgba(0, 255, 136, 0.1);
+  border: 1px solid var(--border-color);
 }
 
 .locationTime {
   font-weight: 600;
-  color: #00ccff;
+  color: var(--accent-secondary);
   margin-bottom: 10px;
   font-family: 'Share Tech Mono', monospace;
   font-size: 13px;
@@ -364,14 +364,14 @@
 }
 
 .coordLabel {
-  color: #666;
+  color: var(--muted-text);
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 
 .coordValue {
-  color: #e0e0e0;
+  color: var(--text-primary);
   font-weight: 500;
   font-family: 'Share Tech Mono', monospace;
 }
@@ -379,7 +379,7 @@
 .emptyState {
   text-align: center;
   padding: 40px;
-  color: #666;
+  color: var(--muted-text);
 }
 
 .emptyStateIcon {
@@ -394,9 +394,9 @@
   font-size: 11px;
   cursor: pointer;
   font-family: 'Share Tech Mono', monospace;
-  background: rgba(0, 0, 0, 0.5);
-  color: #00ccff;
-  border: 1px solid rgba(0, 204, 255, 0.3);
+  background: var(--input-bg);
+  color: var(--accent-secondary);
+  border: 1px solid var(--accent-secondary-alpha30);
   border-radius: 4px;
   word-break: break-all;
 }
@@ -440,7 +440,7 @@
 .helpText {
   display: block;
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-secondary);
   margin-top: 4px;
 }
 
@@ -449,14 +449,14 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(0, 255, 136, 0.1);
-  color: #00ff88;
+  background: var(--accent-primary-alpha10);
+  color: var(--accent-primary);
   padding: 3px 10px;
   border-radius: 4px;
   font-size: 11px;
   font-weight: 600;
   margin-left: 12px;
-  border: 1px solid rgba(0, 255, 136, 0.3);
+  border: 1px solid var(--border-color);
   font-family: 'Share Tech Mono', monospace;
   text-transform: none;
   letter-spacing: 0;
@@ -467,7 +467,7 @@
   display: inline-block;
   width: 8px;
   height: 8px;
-  background: #00ff88;
+  background: var(--accent-primary);
   border-radius: 50%;
   animation: pulse 2s ease-in-out infinite;
   flex-shrink: 0;
@@ -487,8 +487,8 @@
 .realtimeLocation {
   margin-top: 15px;
   padding: 15px;
-  background: rgba(0, 255, 136, 0.05);
-  border: 1px solid rgba(0, 255, 136, 0.2);
+  background: var(--accent-primary-alpha05);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
 }
 
@@ -497,7 +497,7 @@
   align-items: center;
   gap: 8px;
   margin-bottom: 12px;
-  color: #00ff88;
+  color: var(--accent-primary);
   font-size: 13px;
   font-family: 'Orbitron', sans-serif;
   text-transform: uppercase;
@@ -507,7 +507,7 @@
 .heartbeatInfo {
   margin-left: auto;
   font-size: 10px;
-  color: #666;
+  color: var(--muted-text);
   font-family: 'Share Tech Mono', monospace;
   text-transform: none;
   letter-spacing: 0;
@@ -521,7 +521,7 @@
 }
 
 .awaitingData {
-  color: #888;
+  color: var(--text-secondary);
   font-size: 13px;
   font-family: 'Share Tech Mono', monospace;
   padding: 10px 0;
@@ -543,23 +543,23 @@
   width: 100%;
   max-width: 400px;
   padding: 10px 16px;
-  border: 1px solid rgba(0, 255, 136, 0.3);
+  border: 1px solid var(--input-border);
   border-radius: 4px;
   font-size: 13px;
-  background: rgba(0, 0, 0, 0.5);
-  color: #e0e0e0;
+  background: var(--input-bg);
+  color: var(--text-primary);
   font-family: 'Share Tech Mono', monospace;
   transition: all 0.3s;
 }
 
 .searchInput:focus {
   outline: none;
-  border-color: #00ff88;
-  box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 15px var(--shadow-color);
 }
 
 .searchInput::placeholder {
-  color: #555;
+  color: var(--placeholder-color);
 }
 
 .mapEmbed {
@@ -568,12 +568,28 @@
   border-radius: 4px;
   overflow: hidden;
   margin-bottom: 12px;
-  border: 1px solid rgba(0, 255, 136, 0.3);
-  box-shadow: 0 0 15px rgba(0, 255, 136, 0.15);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 0 15px var(--shadow-color);
 }
 
 .mapIframe {
   width: 100%;
   height: 100%;
   border: none;
+}
+
+.themeToggleBtn {
+  background: var(--accent-primary-alpha10, rgba(0, 255, 136, 0.1));
+  border: 1px solid var(--border-color, rgba(0, 255, 136, 0.3));
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s;
+  line-height: 1;
+}
+
+.themeToggleBtn:hover {
+  background: var(--accent-primary-alpha10, rgba(0, 255, 136, 0.2));
+  box-shadow: 0 0 15px var(--shadow-color, rgba(0, 255, 136, 0.3));
 }

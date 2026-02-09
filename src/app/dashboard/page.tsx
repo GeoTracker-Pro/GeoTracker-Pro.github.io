@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
+import { useTheme } from '@/lib/theme-context';
 import {
   Tracker,
   getTrackersAsync,
@@ -31,6 +32,7 @@ function formatDate(dateStr: string | undefined): string {
 export default function Dashboard() {
   const router = useRouter();
   const { user, loading: authLoading, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [trackers, setTrackers] = useState<Tracker[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [trackerName, setTrackerName] = useState('');
@@ -343,6 +345,14 @@ export default function Dashboard() {
             <p className={styles.subtitle}>Surveillance operations dashboard</p>
           </div>
           <div className={styles.headerActions}>
+            <button
+              onClick={toggleTheme}
+              className={styles.themeToggleBtn}
+              aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+              title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            >
+              {theme === 'dark' ? '☀️' : '🌙'}
+            </button>
             <span className={styles.userInfo}>
               👤 {user?.displayName || user?.email || 'Guest'}
             </span>
