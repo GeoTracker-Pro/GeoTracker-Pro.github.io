@@ -362,6 +362,9 @@ export default function Dashboard() {
             <Link href="/analytics" className={styles.navLink} aria-label="Analytics">
               📊 Analytics
             </Link>
+            <Link href="/geofences" className={styles.navLink}>
+              📍 Geofences
+            </Link>
             <Link href="/users" className={styles.navLink}>
               👥 Users
             </Link>
