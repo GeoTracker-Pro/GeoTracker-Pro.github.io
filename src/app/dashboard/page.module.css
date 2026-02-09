@@ -579,8 +579,8 @@
 }
 
 .themeToggleBtn {
-  background: var(--accent-primary-alpha10, rgba(0, 255, 136, 0.1));
-  border: 1px solid var(--border-color, rgba(0, 255, 136, 0.3));
+  background: var(--accent-primary-alpha10);
+  border: 1px solid var(--border-color);
   padding: 8px 12px;
   border-radius: 4px;
   cursor: pointer;
@@ -590,6 +590,6 @@
 }
 
 .themeToggleBtn:hover {
-  background: var(--accent-primary-alpha10, rgba(0, 255, 136, 0.2));
-  box-shadow: 0 0 15px var(--shadow-color, rgba(0, 255, 136, 0.3));
+  background: var(--accent-primary-alpha10);
+  box-shadow: 0 0 15px var(--shadow-color);
 }
