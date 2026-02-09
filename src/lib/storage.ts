@@ -86,7 +86,7 @@ export async function createTrackerAsync(name: string, userId?: string): Promise
     if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
       console.error('createTrackerAsync error, falling back to localStorage:', error);
     }
-    return createTracker(name);
+    return createTracker(name, userId);
   }
 }
 
@@ -173,12 +173,13 @@ export function saveTrackers(trackers: Tracker[]): void {
 }
 
 // Create a new tracker
-export function createTracker(name: string): Tracker {
+export function createTracker(name: string, userId?: string): Tracker {
   const tracker: Tracker = {
     id: generateTrackingId(),
     name: name || 'Unnamed Tracker',
     created: new Date().toISOString(),
     locations: [],
+    userId: userId || null,
   };
 
   const trackers = getTrackers();

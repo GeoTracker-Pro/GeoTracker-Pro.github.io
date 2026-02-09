@@ -103,9 +103,12 @@ export default function StandaloneTracker() {
   const fetchLocationRef = useRef(fetchLocation);
   fetchLocationRef.current = fetchLocation;
 
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     // Get or create a tracking ID persisted across page refreshes
     let id: string;
+    let cancelled = false;
     try {
       const stored = sessionStorage.getItem(SESSION_KEY);
       if (stored) {
@@ -132,11 +135,27 @@ export default function StandaloneTracker() {
         // Proceed even if tracker init fails; addLocationToTrackerAsync
         // can create the document on the fly.
       }
+      if (cancelled) return;
       trackerReadyRef.current = true;
       await fetchLocationRef.current();
+
+      // Set up 15-second auto-update interval
+      if (!cancelled) {
+        intervalRef.current = setInterval(() => {
+          fetchLocationRef.current();
+        }, 15000);
+      }
     };
 
     init();
+
+    return () => {
+      cancelled = true;
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
   }, []);
 
   const mapUrl = locationData
