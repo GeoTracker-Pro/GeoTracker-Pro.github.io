@@ -154,7 +154,7 @@ export default function Dashboard() {
 
     const tracker = await createTrackerAsync(sanitizedName, user.uid);
     if (tracker) {
-      const url = `${baseUrl}/track?id=${tracker.id}`;
+      const url = `${baseUrl}/track/?id=${tracker.id}`;
       setGeneratedUrl(url);
       setTrackerName('');
       // No need to manually reload — real-time listener will update automatically
@@ -475,7 +475,7 @@ export default function Dashboard() {
                     className={styles.trackerLink}
                     onClick={(e) => {
                       e.stopPropagation();
-                      const link = `${baseUrl}/track?id=${tracker.id}`;
+                      const link = `${baseUrl}/track/?id=${tracker.id}`;
                       navigator.clipboard.writeText(link).then(
                         () => showMessage('Tracking link copied!'),
                         () => showMessage('Failed to copy link.', true)
@@ -483,7 +483,7 @@ export default function Dashboard() {
                     }}
                     title="Click to copy"
                   >
-                    {baseUrl}/track?id={tracker.id}
+                    {baseUrl}/track/?id={tracker.id}
                   </span>
                 </div>
               </div>

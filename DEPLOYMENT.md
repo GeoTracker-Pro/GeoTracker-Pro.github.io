@@ -1,6 +1,6 @@
 # 🚀 GeoTracker Deployment Guide
 
-This guide covers deploying the GeoTracker application to various hosting platforms.
+This guide covers deploying the GeoTracker application, with GitHub Pages as the recommended approach.
 
 ## Prerequisites
 
@@ -28,253 +28,64 @@ Get these from [Firebase Console](https://console.firebase.google.com/) → Your
 
 ## 📦 Deployment Options
 
-### Option 1: Vercel (Recommended - Easiest)
+### Option 1: GitHub Pages (Recommended)
 
-Vercel is the easiest deployment option for Next.js applications.
-
-**Steps:**
-
-1. **Install Vercel CLI** (optional - you can also use the web interface):
-   ```bash
-   npm install -g vercel
-   ```
-
-2. **Deploy via CLI**:
-   ```bash
-   # Login to Vercel
-   vercel login
-   
-   # Deploy
-   vercel
-   ```
-
-3. **Or Deploy via GitHub**:
-   - Go to [vercel.com](https://vercel.com)
-   - Click "Import Project"
-   - Connect your GitHub repository
-   - Vercel will auto-detect Next.js settings
-   - Add environment variables in the Vercel dashboard
-   - Deploy!
-
-**Add Environment Variables in Vercel:**
-- Go to Project Settings → Environment Variables
-- Add all `NEXT_PUBLIC_FIREBASE_*` variables
-- Redeploy if needed
-
-### Option 2: Firebase Hosting
-
-Firebase Hosting is ideal since you're already using Firebase for the backend.
+GitHub Pages is free and integrates directly with your repository. A GitHub Actions workflow (`.github/workflows/deploy.yml`) is already included in the repository.
 
 **Steps:**
 
-1. **Install Firebase CLI**:
-   ```bash
-   npm install -g firebase-tools
-   ```
+1. **Add Firebase secrets to your repository**:
+   - Go to your repository on GitHub → **Settings** → **Secrets and variables** → **Actions**
+   - Add each `NEXT_PUBLIC_FIREBASE_*` variable as a repository secret
 
-2. **Login to Firebase**:
-   ```bash
-   firebase login
-   ```
+2. **Enable GitHub Pages**:
+   - Go to repository **Settings** → **Pages**
+   - Under "Source", select **GitHub Actions**
+   - Click **Save**
 
-3. **Initialize Firebase Hosting** (if not already done):
-   ```bash
-   firebase init hosting
-   ```
-   - Select your Firebase project
+3. **Trigger a deployment**:
+   - Push a commit to the `main` branch, or
+   - Go to **Actions** → **Deploy to GitHub Pages** → **Run workflow**
+
+4. **Access your site** at `https://<username>.github.io/<repo-name>/`
+
+**Note:** The `next.config.js` supports a `NEXT_PUBLIC_BASE_PATH` environment variable for the base path. The deploy workflow handles this automatically.
+
+### Option 2: Vercel
+
+Vercel offers seamless Next.js deployment.
+
+1. Connect your GitHub repository at [vercel.com](https://vercel.com)
+2. Add all `NEXT_PUBLIC_FIREBASE_*` environment variables in the Vercel dashboard
+3. Deploy — Vercel auto-detects Next.js settings
+
+### Option 3: Firebase Hosting
+
+1. Install Firebase CLI: `npm install -g firebase-tools`
+2. Run `firebase login && firebase init hosting`
    - Set public directory to `out`
    - Configure as single-page app: Yes
-   - Don't overwrite existing files
+3. Build: `npm run build`
+4. Deploy: `firebase deploy --only hosting`
 
-4. **Build the application**:
-   ```bash
-   npm run build
-   ```
+**Note:** Set your environment variables in `.env.local` before building, as they are embedded at build time.
 
-5. **Deploy to Firebase**:
-   ```bash
-   firebase deploy --only hosting
-   ```
+### Option 4: Other Static Hosts (Netlify, etc.)
 
-6. **Deploy Firestore rules** (if needed):
-   ```bash
-   firebase deploy --only firestore:rules
-   ```
-
-**Note:** Firebase Hosting uses client-side environment variables that are embedded during build time. Make sure to build with the correct `.env.local` file configured.
-
-### Option 3: Netlify
-
-Netlify is another popular static hosting option.
-
-**Steps:**
-
-1. **Install Netlify CLI** (optional):
-   ```bash
-   npm install -g netlify-cli
-   ```
-
-2. **Deploy via CLI**:
-   ```bash
-   # Login
-   netlify login
-   
-   # Build
-   npm run build
-   
-   # Deploy
-   netlify deploy --prod --dir=out
-   ```
-
-3. **Or Deploy via GitHub**:
-   - Go to [netlify.com](https://www.netlify.com)
-   - Click "Add new site" → "Import an existing project"
-   - Connect your GitHub repository
-   - Build settings:
-     - Build command: `npm run build`
-     - Publish directory: `out`
-   - Add environment variables
-   - Deploy!
-
-**Configure Redirects** (create `netlify.toml`):
-```toml
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-```
-
-### Option 4: GitHub Pages
-
-GitHub Pages is free for public repositories.
-
-**Steps:**
-
-1. **Update `next.config.js`** with your repository base path:
-   ```javascript
-   const nextConfig = {
-     output: 'export',
-     trailingSlash: true,
-     images: {
-       unoptimized: true,
-     },
-     basePath: '/GeoTracker', // Your repo name
-     assetPrefix: '/GeoTracker/',
-   };
-   ```
-
-2. **Build the application**:
-   ```bash
-   npm run build
-   ```
-
-3. **Deploy using GitHub Actions**:
-   
-   Create `.github/workflows/deploy.yml`:
-   ```yaml
-   name: Deploy to GitHub Pages
-
-   on:
-     push:
-       branches: [ main ]
-     workflow_dispatch:
-
-   permissions:
-     contents: read
-     pages: write
-     id-token: write
-
-   jobs:
-     build:
-       runs-on: ubuntu-latest
-       steps:
-         - uses: actions/checkout@v4
-         - uses: actions/setup-node@v4
-           with:
-             node-version: '18'
-             cache: 'npm'
-         - run: npm ci
-         - run: npm run build
-         - uses: actions/upload-pages-artifact@v3
-           with:
-             path: ./out
-     
-     deploy:
-       needs: build
-       runs-on: ubuntu-latest
-       environment:
-         name: github-pages
-         url: ${{ steps.deployment.outputs.page_url }}
-       steps:
-         - id: deployment
-           uses: actions/deploy-pages@v4
-   ```
-
-4. **Enable GitHub Pages**:
-   - Go to repository Settings → Pages
-   - Source: GitHub Actions
-   - Save
-
-**Note:** For GitHub Pages, Firebase credentials will be embedded in the built static files. Make sure your Firebase security rules are properly configured.
-
-### Option 5: Custom Server / VPS
-
-Deploy to any server with Node.js support.
-
-**Steps:**
-
-1. **Build the application**:
-   ```bash
-   npm run build
-   ```
-
-2. **Copy the `out` directory** to your server
-
-3. **Serve with a web server**:
-   
-   **Using Nginx:**
-   ```nginx
-   server {
-       listen 80;
-       server_name your-domain.com;
-       root /path/to/out;
-       
-       location / {
-           try_files $uri $uri/ /index.html;
-       }
-   }
-   ```
-   
-   **Using Apache:**
-   ```apache
-   <VirtualHost *:80>
-       ServerName your-domain.com
-       DocumentRoot /path/to/out
-       
-       <Directory /path/to/out>
-           AllowOverride All
-           Require all granted
-           
-           RewriteEngine On
-           RewriteBase /
-           RewriteRule ^index\.html$ - [L]
-           RewriteCond %{REQUEST_FILENAME} !-f
-           RewriteCond %{REQUEST_FILENAME} !-d
-           RewriteRule . /index.html [L]
-       </Directory>
-   </VirtualHost>
-   ```
+1. Build: `npm run build`
+2. Deploy the `out` directory to your hosting provider
+3. Configure SPA redirect rules (all routes → `index.html`)
+4. Set environment variables in your hosting provider's dashboard before building
 
 ## 🔒 Security Checklist
 
 Before deploying to production:
 
-- [ ] Configure Firebase Security Rules (see `firestore.rules`)
+- [ ] Configure Firestore security rules (see [FIREBASE_SETUP.md](./FIREBASE_SETUP.md))
 - [ ] Enable Firebase Authentication (Email/Password and Anonymous)
 - [ ] Use HTTPS (required for geolocation API)
 - [ ] Review Firebase API key restrictions in Google Cloud Console
 - [ ] Set up Firebase App Check for additional security (optional)
-- [ ] Review application permissions and access controls
 
 ## 🧪 Testing Your Deployment
 
@@ -287,25 +98,11 @@ After deployment:
 5. ✅ Verify data is stored in Firebase
 6. ✅ Check browser console for errors
 
-## 📊 Monitoring
-
-- **Vercel/Netlify**: Check built-in analytics dashboard
-- **Firebase**: Monitor usage in Firebase Console → Analytics
-- **Custom**: Set up application monitoring (e.g., Sentry, LogRocket)
-
-## 🔄 Continuous Deployment
-
-For automatic deployments on git push:
-
-- **Vercel/Netlify**: Automatically deploy on push to main branch
-- **Firebase**: Set up GitHub Actions (see GitHub Pages example above)
-- **Custom**: Configure CI/CD pipeline (e.g., Jenkins, GitLab CI)
-
 ## 🐛 Troubleshooting
 
 **Build fails with Firebase error:**
 - Ensure all environment variables are set correctly
-- Check that `.env.local` exists with valid Firebase config
+- For GitHub Pages, verify secrets are added in repository settings
 
 **Location tracking doesn't work:**
 - Ensure your site is served over HTTPS
@@ -313,7 +110,7 @@ For automatic deployments on git push:
 - Verify geolocation is enabled on the device
 
 **Firebase errors in production:**
-- Check Firebase Security Rules are deployed
+- Check Firebase security rules are configured
 - Verify Authentication is enabled
 - Check Firebase API quotas haven't been exceeded
 
@@ -324,13 +121,6 @@ For automatic deployments on git push:
 - Firebase initialization is lazy-loaded at runtime
 - Environment variables are embedded during build time (no server-side secrets)
 
-## 🆘 Support
-
-For deployment issues:
-- Check [Next.js Deployment Documentation](https://nextjs.org/docs/deployment)
-- Review [Firebase Hosting Documentation](https://firebase.google.com/docs/hosting)
-- Open an issue on GitHub
-
 ---
 
-**Ready to deploy?** Choose your platform above and follow the steps! 🚀
+**Ready to deploy?** Start with GitHub Pages — it's free and already configured! 🚀

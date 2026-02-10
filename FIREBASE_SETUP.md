@@ -1,6 +1,6 @@
 # 🔥 Firebase Setup Guide for GeoTracker
 
-This guide will help you fix the Firebase configuration error and get your GeoTracker application running.
+This guide will help you set up your own Firebase project and configure GeoTracker to use it.
 
 ## ⚠️ Common Error: `auth/configuration-not-found`
 
@@ -10,15 +10,17 @@ If you're seeing this error, it means Firebase Authentication is not properly en
 
 - A Google account
 - Access to [Firebase Console](https://console.firebase.google.com/)
-- The Firebase project ID: `geotrackerpro-e3149`
 
 ## 🚀 Step-by-Step Setup
 
-### 1. Access Your Firebase Project
+### 1. Create Your Firebase Project
 
 1. Go to [Firebase Console](https://console.firebase.google.com/)
 2. Sign in with your Google account
-3. Select the project `geotrackerpro-e3149` (or create it if it doesn't exist)
+3. Click **"Create a project"** (or **"Add project"**)
+4. Enter a project name (e.g., "my-geotracker")
+5. Optionally enable Google Analytics, then click **"Create project"**
+6. Once the project is created, click **"Continue"**
 
 ### 2. Enable Firebase Authentication
 
@@ -55,23 +57,6 @@ You need to enable **TWO** authentication methods for GeoTracker to work:
 
 **This step is required to fix "Missing or insufficient permissions" errors.**
 
-#### Option A: Deploy using Firebase CLI (Recommended)
-
-The repository includes a `firestore.rules` file with the correct security rules. Deploy them using:
-
-```bash
-# Install Firebase CLI if you haven't
-npm install -g firebase-tools
-
-# Login to Firebase
-firebase login
-
-# Deploy Firestore rules only
-firebase deploy --only firestore:rules
-```
-
-#### Option B: Manual Configuration via Console
-
 1. Go to **Firestore Database** > **Rules** tab in Firebase Console
 2. Replace the rules with the following:
 
@@ -90,23 +75,28 @@ service cloud.firestore {
 
 ⚠️ **Important**: Without these rules, you will see "Missing or insufficient permissions" errors when trying to create trackers or users
 
-### 6. Verify Your Configuration
+### 6. Configure Environment Variables
 
-Your Firebase configuration in `src/lib/firebase.ts` should already have these values:
+GeoTracker reads Firebase configuration from environment variables. You need to register a **Web app** in your Firebase project and then provide the config values.
 
-```javascript
-{
-  apiKey: "AIzaSyALuk1ujZBLTWMCJJ6ebT9DdH9CtYwVJ6I",
-  authDomain: "geotrackerpro-e3149.firebaseapp.com",
-  projectId: "geotrackerpro-e3149",
-  storageBucket: "geotrackerpro-e3149.firebasestorage.app",
-  messagingSenderId: "948578635618",
-  appId: "1:948578635618:web:803ddf06141f602dd7a63b",
-  measurementId: "G-23B0643XX7"
-}
+1. In Firebase Console, go to **Project Settings** (gear icon) > **General**
+2. Under "Your apps", click the **Web** icon (`</>`) to add a web app
+3. Enter a nickname (e.g., "GeoTracker Web") and click **"Register app"**
+4. Copy the configuration values shown
+
+Create a `.env.local` file in the project root with your values:
+
+```bash
+NEXT_PUBLIC_FIREBASE_API_KEY=your-api-key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.firebasestorage.app
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
+NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your-measurement-id
 ```
 
-**Note:** These values are safe to commit to your repository. Firebase security rules protect your data, not these configuration values.
+**Note:** Never commit `.env.local` to version control. For deployment, add these as GitHub Secrets or your hosting platform's environment variables.
 
 ## 🧪 Testing Your Setup
 
@@ -155,7 +145,7 @@ This means the sign-in method is not enabled:
 ### Error: `auth/invalid-api-key`
 
 This means there's an issue with the API key:
-- Verify the API key in `src/lib/firebase.ts` matches your Firebase project
+- Verify the environment variables in `.env.local` match your Firebase project
 - You can find your correct API key in Firebase Console > Project Settings > General
 
 ### Network errors
@@ -188,14 +178,14 @@ This means there's an issue with the API key:
 - [Firestore Security Rules](https://firebase.google.com/docs/firestore/security/get-started)
 - [Firebase Console](https://console.firebase.google.com/)
 
-## 💡 Using Custom Firebase Project (Optional)
+## 💡 Using Your Firebase Project
 
-If you want to use your own Firebase project instead:
+Each deployment of GeoTracker uses its own Firebase project. To set up yours:
 
 1. Create a new Firebase project in [Firebase Console](https://console.firebase.google.com/)
 2. Follow steps 2-5 above for your new project
-3. Update `src/lib/firebase.ts` with your project's configuration values
-4. Or use environment variables (see `.env.local.example`)
+3. Set the environment variables as described in step 6
+4. For GitHub Pages deployment, add the variables as repository secrets (see [DEPLOYMENT.md](./DEPLOYMENT.md))
 
 ## 🎯 Quick Checklist
 

@@ -45,7 +45,7 @@ GeoTracker is designed as a **privacy-focused, self-hosted location tracking sol
 
 - Node.js (v18 or higher)
 - npm or yarn
-- Firebase project (already configured)
+- A Firebase project (see [FIREBASE_SETUP.md](./FIREBASE_SETUP.md))
 - Modern web browser with geolocation support
 
 ## 🚀 Quick Start
@@ -63,12 +63,21 @@ cd GeoTracker
 npm install
 ```
 
-3. **Configure environment variables**
+3. **Set up Firebase and configure environment variables**
+
+Create your Firebase project by following the steps in [FIREBASE_SETUP.md](./FIREBASE_SETUP.md), then create a `.env.local` file in the project root with your Firebase configuration:
+
 ```bash
-cp .env.local.example .env.local
+NEXT_PUBLIC_FIREBASE_API_KEY=your-api-key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.firebasestorage.app
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
+NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your-measurement-id
 ```
 
-Edit `.env.local` and set your Firebase configuration values. The example file includes default values for the geotrackerpro-e3149 project. See [Configuration](#-configuration) section below for more details.
+Get these values from [Firebase Console](https://console.firebase.google.com/) > Project Settings > General. See [FIREBASE_SETUP.md](./FIREBASE_SETUP.md) for detailed setup instructions.
 
 4. **Start the development server**
 ```bash
@@ -92,7 +101,7 @@ npm run build
 
 ### Required Environment Variables
 
-The application requires Firebase configuration via environment variables. Copy `.env.local.example` to `.env.local` and update the values:
+The application requires Firebase configuration via environment variables. Create a `.env.local` file and provide the values from your Firebase project:
 
 ```bash
 # Firebase Configuration (Required)
@@ -111,31 +120,26 @@ NEXT_PUBLIC_ADMIN_EMAIL=your-admin@email.com
 **Important Notes:**
 - Without proper Firebase configuration, the application will not work
 - Get these values from [Firebase Console](https://console.firebase.google.com/) > Project Settings > General
-- The `.env.local.example` file contains default values for quick setup
 - Never commit your `.env.local` file to version control
+- For deployment, add these as GitHub Secrets or your hosting platform's environment variables
 
-## 🌐 Deployment Options
+## 🌐 Deployment
 
-### Vercel (Recommended)
+### GitHub Pages (Recommended)
 
-1. Connect your GitHub repository to Vercel
-2. Deploy (no additional configuration needed - Firebase config is already in the code)
+A GitHub Actions workflow (`.github/workflows/deploy.yml`) is included for automatic deployment to GitHub Pages.
 
-### Netlify / Other Static Hosts
+1. Add your `NEXT_PUBLIC_FIREBASE_*` variables as repository secrets in GitHub
+2. Enable GitHub Pages in repository Settings → Pages → Source: **GitHub Actions**
+3. Push to `main` or trigger the workflow manually
 
-1. Build the project: `npm run build`
-2. Deploy the `out` directory
-3. Configure redirect rules for SPA routing
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions.
 
-### Firebase Hosting
+### Other Options
 
-```bash
-npm install -g firebase-tools
-firebase login
-firebase init hosting
-npm run build
-firebase deploy
-```
+- **Vercel**: Connect your repo and add environment variables in the dashboard
+- **Firebase Hosting**: Build and deploy the `out` directory
+- **Any static host**: Build with `npm run build` and deploy the `out` directory
 
 ## 📖 Usage
 
@@ -187,13 +191,13 @@ GeoTracker/
 │   │   ├── providers.tsx         # Auth context provider wrapper
 │   │   └── layout.tsx            # Root layout with providers
 │   ├── lib/
-│   │   ├── firebase.ts           # Firebase initialization
+│   │   ├── firebase.ts           # Firebase initialization (env-based config)
 │   │   ├── firebase-services.ts  # Firestore CRUD operations
 │   │   ├── auth-context.tsx      # Authentication context
 │   │   └── storage.ts            # Storage utilities (Firebase + localStorage fallback)
 │   └── styles/
 │       └── globals.css           # Global styles
-├── .env.local.example            # Example environment variables
+├── .github/workflows/deploy.yml  # GitHub Pages deployment workflow
 ├── next.config.js                # Next.js configuration
 ├── tsconfig.json                 # TypeScript configuration
 ├── package.json                  # Dependencies and scripts
@@ -260,22 +264,9 @@ GeoTracker/
 3. **HTTPS**: Required for geolocation API to work in modern browsers
 4. **Firebase Security Rules**: Configure Firestore rules for production use
 
-### Deploying Firestore Security Rules
+### Configuring Firestore Security Rules
 
-The repository includes a `firestore.rules` file with production-ready security rules. Deploy them using:
-
-```bash
-# Install Firebase CLI
-npm install -g firebase-tools
-
-# Login and deploy rules
-firebase login
-firebase deploy --only firestore:rules
-```
-
-Alternatively, copy the rules from `firestore.rules` to your Firebase Console > Firestore Database > Rules tab.
-
-### Security Rules Overview
+Configure security rules in your Firebase Console > Firestore Database > Rules tab:
 
 ```javascript
 rules_version = '2';
@@ -287,6 +278,8 @@ service cloud.firestore {
   }
 }
 ```
+
+See [FIREBASE_SETUP.md](./FIREBASE_SETUP.md) for detailed instructions.
 
 ## 📱 Mobile Support
 
@@ -302,12 +295,9 @@ service cloud.firestore {
 **This error means Firestore security rules are not configured correctly.**
 
 **Quick Fix:**
-1. Deploy the included `firestore.rules` file:
-   ```bash
-   firebase login
-   firebase deploy --only firestore:rules
-   ```
-2. Or manually copy the rules from `firestore.rules` to Firebase Console > Firestore Database > Rules
+1. Go to Firebase Console > Firestore Database > Rules
+2. Add the security rules shown in [FIREBASE_SETUP.md](./FIREBASE_SETUP.md)
+3. Click **"Publish"**
 
 📖 **For detailed instructions, see [FIREBASE_SETUP.md](./FIREBASE_SETUP.md)**
 
@@ -317,7 +307,7 @@ service cloud.firestore {
 
 **Quick Fix:**
 1. Go to [Firebase Console](https://console.firebase.google.com/)
-2. Open project `geotrackerpro-e3149`
+2. Open your Firebase project
 3. Enable Authentication (click "Get Started" if needed)
 4. Enable **Email/Password** sign-in method
 5. Enable **Anonymous** sign-in method
