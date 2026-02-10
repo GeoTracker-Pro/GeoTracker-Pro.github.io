@@ -18,6 +18,11 @@ export interface DeviceInfo {
   platform: string;
   screen: string;
   userAgent: string;
+  batteryLevel?: number;
+  batteryCharging?: boolean;
+  connectionType?: string;
+  heading?: number;
+  motionState?: string;
 }
 
 export interface LocationData {
@@ -304,6 +309,34 @@ export function getDeviceInfo(): DeviceInfo {
     screen: `${window.screen.width} x ${window.screen.height}`,
     userAgent,
   };
+}
+
+// Get enhanced device info (async, includes battery and network data)
+export async function getEnhancedDeviceInfo(): Promise<DeviceInfo> {
+  const basic = getDeviceInfo();
+
+  // Battery API
+  try {
+    if (typeof navigator !== 'undefined' && 'getBattery' in navigator) {
+      const battery = await (navigator as any).getBattery();
+      basic.batteryLevel = Math.round(battery.level * 100);
+      basic.batteryCharging = battery.charging;
+    }
+  } catch {
+    // Battery API may not be available in all browsers
+  }
+
+  // Network Information API
+  try {
+    const conn = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
+    if (conn) {
+      basic.connectionType = conn.effectiveType || conn.type || 'unknown';
+    }
+  } catch {
+    // Network Information API may not be available in all browsers
+  }
+
+  return basic;
 }
 
 // Get IP address (using free API)

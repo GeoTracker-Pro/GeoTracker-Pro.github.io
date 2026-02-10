@@ -2,13 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
+import { useTheme } from '@/lib/theme-context';
 import { getFirebaseErrorMessage } from '@/lib/firebase-errors';
 import styles from './page.module.css';
 
 export default function LoginPage() {
   const router = useRouter();
   const { user, loading: authLoading, signIn, signUp, signInAsGuest, error: authError } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -58,6 +61,14 @@ export default function LoginPage() {
 
   return (
     <div className={styles.loginBg}>
+      <button
+        onClick={toggleTheme}
+        className={styles.themeToggleBtn}
+        aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+        title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+      >
+        {theme === 'dark' ? '☀️' : '🌙'}
+      </button>
       <div className={styles.container}>
         <div className={styles.logo}>🎯</div>
         <h1>Cyber Tracker</h1>
@@ -152,6 +163,12 @@ export default function LoginPage() {
         >
           {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
         </button>
+
+        <div className={styles.legalLinks}>
+          <Link href="/privacy">Privacy Policy</Link>
+          <span>•</span>
+          <Link href="/terms">Terms of Service</Link>
+        </div>
       </div>
     </div>
   );

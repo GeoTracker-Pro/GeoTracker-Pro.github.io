@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
+import { useTheme } from '@/lib/theme-context';
+import { useNotifications } from '@/lib/notification-context';
 import {
   Tracker,
   getTrackersAsync,
@@ -12,6 +14,8 @@ import {
   deleteTrackerAsync,
   subscribeToTrackersRealtime,
 } from '@/lib/storage';
+import { reverseGeocode } from '@/lib/geocoding';
+import { generateQRCodeUrl } from '@/lib/qrcode';
 import styles from './page.module.css';
 
 const FALLBACK_POLL_INTERVAL_MS = 30000;
@@ -31,6 +35,8 @@ function formatDate(dateStr: string | undefined): string {
 export default function Dashboard() {
   const router = useRouter();
   const { user, loading: authLoading, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
   const [trackers, setTrackers] = useState<Tracker[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [trackerName, setTrackerName] = useState('');
@@ -41,13 +47,30 @@ export default function Dashboard() {
   const [statusMessage, setStatusMessage] = useState('');
   const [isError, setIsError] = useState(false);
   const [realtimeActive, setRealtimeActive] = useState(false);
+  const [showNotifDropdown, setShowNotifDropdown] = useState(false);
+  const [addresses, setAddresses] = useState<Record<string, string>>({});
+  const [showQR, setShowQR] = useState<string | null>(null);
   const unsubscribeRef = useRef<(() => void) | null>(null);
+  const notifBellRef = useRef<HTMLDivElement>(null);
 
   const showMessage = (message: string, error = false) => {
     setStatusMessage(message);
     setIsError(error);
     setTimeout(() => setStatusMessage(''), 3000);
   };
+
+  // Close notification dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (notifBellRef.current && !notifBellRef.current.contains(event.target as Node)) {
+        setShowNotifDropdown(false);
+      }
+    }
+    if (showNotifDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showNotifDropdown]);
 
   const loadTrackers = useCallback(async () => {
     if (!user) return;
@@ -65,6 +88,22 @@ export default function Dashboard() {
   // Use a ref for the fallback loader to avoid re-triggering the subscription effect
   const loadTrackersRef = useRef(loadTrackers);
   loadTrackersRef.current = loadTrackers;
+
+  // Reverse geocode latest location for each tracker
+  useEffect(() => {
+    const geocodeTrackers = async () => {
+      for (const tracker of trackers) {
+        if (tracker.locations.length > 0 && !addresses[tracker.id]) {
+          const loc = tracker.locations[0];
+          const result = await reverseGeocode(loc.latitude, loc.longitude);
+          if (result) {
+            setAddresses((prev) => ({ ...prev, [tracker.id]: result.displayName }));
+          }
+        }
+      }
+    };
+    geocodeTrackers();
+  }, [trackers]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     // Check if user is authenticated
@@ -324,6 +363,36 @@ export default function Dashboard() {
     );
   }), [trackers, searchQuery]);
 
+  const getNotifIcon = (type: string) => {
+    switch (type) {
+      case 'success': return '✅';
+      case 'warning': return '⚠️';
+      case 'error': return '❌';
+      case 'geofence': return '📍';
+      case 'tracker': return '📡';
+      default: return 'ℹ️';
+    }
+  };
+
+  const formatNotifTime = (timestamp: string) => {
+    try {
+      const date = new Date(timestamp);
+      const now = new Date();
+      const diffMs = now.getTime() - date.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      if (diffMins < 1) return 'Just now';
+      if (diffMins < 60) return `${diffMins}m ago`;
+      const diffHours = Math.floor(diffMins / 60);
+      if (diffHours < 24) return `${diffHours}h ago`;
+      const diffDays = Math.floor(diffHours / 24);
+      return `${diffDays}d ago`;
+    } catch {
+      return 'Unknown';
+    }
+  };
+
+  const recentNotifications = notifications.slice(0, 5);
+
   if (authLoading || loading) {
     return (
       <div className={styles.dashboardBg}>
@@ -343,14 +412,86 @@ export default function Dashboard() {
             <p className={styles.subtitle}>Surveillance operations dashboard</p>
           </div>
           <div className={styles.headerActions}>
+            <div className={styles.notifBellWrapper} ref={notifBellRef}>
+              <button
+                className={styles.notifBellBtn}
+                onClick={() => setShowNotifDropdown((v) => !v)}
+                aria-label="Notifications"
+                title="Notifications"
+              >
+                🔔
+                {unreadCount > 0 && (
+                  <span className={styles.notifBadge}>{unreadCount > 99 ? '99+' : unreadCount}</span>
+                )}
+              </button>
+              {showNotifDropdown && (
+                <div className={styles.notifDropdown}>
+                  <div className={styles.notifDropdownHeader}>
+                    <span className={styles.notifDropdownTitle}>Notifications</span>
+                    {unreadCount > 0 && (
+                      <button
+                        className={styles.notifMarkAllBtn}
+                        onClick={() => markAllAsRead()}
+                      >
+                        Mark all read
+                      </button>
+                    )}
+                  </div>
+                  <div className={styles.notifDropdownList}>
+                    {recentNotifications.length === 0 ? (
+                      <div className={styles.notifEmpty}>No notifications</div>
+                    ) : (
+                      recentNotifications.map((notif) => (
+                        <div
+                          key={notif.id}
+                          className={`${styles.notifItem} ${!notif.read ? styles.notifUnread : ''}`}
+                          onClick={() => markAsRead(notif.id)}
+                        >
+                          <span className={styles.notifIcon}>{getNotifIcon(notif.type)}</span>
+                          <div className={styles.notifContent}>
+                            <div className={styles.notifItemTitle}>{notif.title}</div>
+                            <div className={styles.notifItemMsg}>{notif.message}</div>
+                            <div className={styles.notifItemTime}>{formatNotifTime(notif.timestamp)}</div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                  <Link
+                    href="/notifications"
+                    className={styles.notifViewAll}
+                    onClick={() => setShowNotifDropdown(false)}
+                  >
+                    View all notifications
+                  </Link>
+                </div>
+              )}
+            </div>
+            <button
+              onClick={toggleTheme}
+              className={styles.themeToggleBtn}
+              aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+              title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            >
+              {theme === 'dark' ? '☀️' : '🌙'}
+            </button>
             <span className={styles.userInfo}>
               👤 {user?.displayName || user?.email || 'Guest'}
             </span>
             <Link href="/tracker" className={styles.navLink}>
               📡 Quick Track
             </Link>
+            <Link href="/analytics" className={styles.navLink} aria-label="Analytics">
+              📊 Analytics
+            </Link>
+            <Link href="/geofences" className={styles.navLink}>
+              📍 Geofences
+            </Link>
             <Link href="/users" className={styles.navLink}>
               👥 Users
+            </Link>
+            <Link href="/settings" className={styles.navLink}>
+              ⚙️ Settings
             </Link>
             <button onClick={handleLogout} className={styles.logoutBtn}>
               ⏻ Disconnect
@@ -396,8 +537,17 @@ export default function Dashboard() {
         {generatedUrl && (
           <div className={styles.generatedLink}>
             <h3>✓ Tracking Link Generated</h3>
-            <p>Share this secure link to begin surveillance (auto-updates every 15s):</p>
+            <p>Share this secure link or scan the QR code:</p>
             <div className={styles.linkText}>{generatedUrl}</div>
+            <div className={styles.qrCodeSection}>
+              <img
+                src={generateQRCodeUrl(generatedUrl, 200)}
+                alt="QR Code for tracking link"
+                className={styles.qrCodeImage}
+                width={200}
+                height={200}
+              />
+            </div>
             <button className="btn btn-secondary" onClick={handleCopyLink} aria-label="Copy tracking link to clipboard">
               📋 Copy Link
             </button>
@@ -485,7 +635,27 @@ export default function Dashboard() {
                   >
                     {baseUrl}/track?id={tracker.id}
                   </span>
+                  <button
+                    className={styles.qrBtn}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowQR(showQR === tracker.id ? null : tracker.id);
+                    }}
+                    title="Show QR Code"
+                  >
+                    📱
+                  </button>
                 </div>
+                {showQR === tracker.id && (
+                  <div className={styles.qrCodeInline}>
+                    <img
+                      src={generateQRCodeUrl(`${baseUrl}/track?id=${tracker.id}`, 150)}
+                      alt="QR Code"
+                      width={150}
+                      height={150}
+                    />
+                  </div>
+                )}
               </div>
 
               <div className={styles.realtimeLocation}>
@@ -522,6 +692,11 @@ export default function Dashboard() {
                         </div>
                       </div>
                     </div>
+                    {addresses[tracker.id] && (
+                      <div className={styles.addressInfo}>
+                        📍 {addresses[tracker.id]}
+                      </div>
+                    )}
                     <div className={styles.mapEmbed}>
                       <iframe
                         src={`https://maps.google.com/maps?q=${tracker.locations[0].latitude},${tracker.locations[0].longitude}&z=15&output=embed`}

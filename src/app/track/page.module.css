@@ -178,3 +178,20 @@
     margin-left: 0;
   }
 }
+
+.sosLink {
+  display: inline-block;
+  margin-top: 10px;
+  margin-left: 15px;
+  color: #ff3333;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: bold;
+  transition: all 0.3s;
+  padding: 8px 0;
+}
+
+.sosLink:hover {
+  color: #ff0000;
+  text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+}

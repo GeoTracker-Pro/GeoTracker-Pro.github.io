@@ -6,7 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import {
   Tracker,
   DeviceInfo,
-  getDeviceInfo,
+  getEnhancedDeviceInfo,
   getIPAddress,
   getCurrentPosition,
   getGeolocationErrorMessage,
@@ -80,7 +80,7 @@ function TrackerContent() {
 
     try {
       const position = await getCurrentPosition();
-      const device = getDeviceInfo();
+      const device = await getEnhancedDeviceInfo();
 
       // Only fetch IP on the first successful call; reuse the cached value for auto-updates
       let ip = cachedIpRef.current || '';
@@ -165,7 +165,7 @@ function TrackerContent() {
       trackerInitializedRef.current = true;
 
       // Step 2: Gather device info
-      const device = getDeviceInfo();
+      const device = await getEnhancedDeviceInfo();
       setDeviceInfo(device);
       getIPAddress().then((ip) => {
         if (!cancelled) setIpAddress(ip);
@@ -334,6 +334,20 @@ function TrackerContent() {
                       {deviceInfo.userAgent}
                     </span>
                   </div>
+                  {deviceInfo.batteryLevel !== undefined && (
+                    <div className="device-item">
+                      <span className="device-label">Battery:</span>
+                      <span className="device-value">
+                        {deviceInfo.batteryLevel}% {deviceInfo.batteryCharging ? '⚡ Charging' : '🔋'}
+                      </span>
+                    </div>
+                  )}
+                  {deviceInfo.connectionType && (
+                    <div className="device-item">
+                      <span className="device-label">Connection:</span>
+                      <span className="device-value">{deviceInfo.connectionType.toUpperCase()}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -342,6 +356,10 @@ function TrackerContent() {
 
         <Link href="/login" className={styles.backLink}>
           ← Return to Command Center
+        </Link>
+
+        <Link href="/sos" className={styles.sosLink}>
+          🆘 Emergency SOS
         </Link>
       </div>
     </div>

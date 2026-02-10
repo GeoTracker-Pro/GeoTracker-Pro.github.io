@@ -1,0 +1,294 @@
+.page {
+  min-height: 100vh;
+  padding: 20px;
+  background: var(--bg-primary);
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  background: var(--bg-card);
+  padding: 20px 24px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 0 20px var(--shadow-color);
+  backdrop-filter: blur(10px);
+}
+
+.headerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.backLink {
+  color: var(--accent-secondary);
+  text-decoration: none;
+  font-size: 12px;
+  font-family: 'Share Tech Mono', monospace;
+  transition: color 0.2s;
+}
+
+.backLink:hover {
+  color: var(--accent-primary);
+}
+
+.title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 20px;
+  color: var(--accent-primary);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 0;
+}
+
+.headerRight {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.actionBtn {
+  background: var(--accent-primary-alpha10);
+  color: var(--accent-primary);
+  border: 1px solid var(--border-color);
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: 'Share Tech Mono', monospace;
+  transition: all 0.3s;
+}
+
+.actionBtn:hover {
+  background: var(--accent-primary-alpha20);
+  box-shadow: 0 0 10px var(--shadow-color);
+}
+
+.dangerBtn {
+  background: var(--danger-alpha10);
+  color: var(--error-color);
+  border: 1px solid var(--danger-alpha30);
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: 'Share Tech Mono', monospace;
+  transition: all 0.3s;
+}
+
+.dangerBtn:hover {
+  background: var(--danger-alpha10);
+  box-shadow: 0 0 10px var(--danger-alpha30);
+}
+
+.filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.filterBtn {
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: 'Share Tech Mono', monospace;
+  transition: all 0.3s;
+}
+
+.filterBtn:hover {
+  background: var(--card-hover-bg);
+  color: var(--text-primary);
+}
+
+.filterActive {
+  background: var(--accent-primary-alpha20);
+  color: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card {
+  display: flex;
+  gap: 14px;
+  background: var(--bg-card);
+  padding: 16px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  border-left: 3px solid var(--accent-secondary);
+  transition: all 0.3s;
+  backdrop-filter: blur(10px);
+}
+
+.card:hover {
+  box-shadow: 0 0 16px var(--shadow-color);
+  background: var(--card-hover-bg);
+}
+
+.cardUnread {
+  background: var(--accent-primary-alpha05);
+}
+
+.card_info {
+  border-left-color: var(--accent-secondary);
+}
+
+.card_success {
+  border-left-color: var(--success-color);
+}
+
+.card_warning {
+  border-left-color: var(--warning-color);
+}
+
+.card_error {
+  border-left-color: var(--error-color);
+}
+
+.card_geofence {
+  border-left-color: var(--accent-primary);
+}
+
+.card_tracker {
+  border-left-color: var(--accent-secondary);
+}
+
+.cardIcon {
+  font-size: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.cardBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.cardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.cardTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.cardTime {
+  font-size: 11px;
+  color: var(--muted-text);
+  white-space: nowrap;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.cardMessage {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0 0 8px 0;
+  line-height: 1.5;
+}
+
+.cardActions {
+  display: flex;
+  gap: 8px;
+}
+
+.smallBtn {
+  background: var(--accent-primary-alpha10);
+  color: var(--accent-primary);
+  border: 1px solid var(--border-color);
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  font-family: 'Share Tech Mono', monospace;
+  transition: all 0.2s;
+}
+
+.smallBtn:hover {
+  background: var(--accent-primary-alpha20);
+}
+
+.smallDangerBtn {
+  background: transparent;
+  color: var(--error-color);
+  border: 1px solid var(--danger-alpha30);
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  font-family: 'Share Tech Mono', monospace;
+  transition: all 0.2s;
+}
+
+.smallDangerBtn:hover {
+  background: var(--danger-alpha10);
+}
+
+.emptyState {
+  text-align: center;
+  padding: 60px 20px;
+  background: var(--bg-card);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.emptyIcon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  filter: grayscale(1) opacity(0.5);
+}
+
+.emptyText {
+  color: var(--muted-text);
+  font-size: 14px;
+  font-family: 'Share Tech Mono', monospace;
+  margin: 0;
+}
+
+@media (max-width: 600px) {
+  .header {
+    flex-direction: column;
+  }
+
+  .cardTop {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .filters {
+    gap: 6px;
+  }
+
+  .filterBtn {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+}

@@ -6,7 +6,7 @@ import {
   LocationData,
   DeviceInfo,
   generateTrackingId,
-  getDeviceInfo,
+  getEnhancedDeviceInfo,
   getIPAddress,
   getCurrentPosition,
   getGeolocationErrorMessage,
@@ -58,7 +58,7 @@ export default function StandaloneTracker() {
 
     try {
       const position = await getCurrentPosition();
-      const device = getDeviceInfo();
+      const device = await getEnhancedDeviceInfo();
       const ip = await getIPAddress();
 
       const data: LocationData = {
@@ -123,8 +123,7 @@ export default function StandaloneTracker() {
     }
     trackingIdRef.current = id;
 
-    const device = getDeviceInfo();
-    setDeviceInfo(device);
+    getEnhancedDeviceInfo().then(setDeviceInfo);
     getIPAddress().then(setIpAddress);
 
     // Initialize tracker in the database, then fetch location
@@ -251,6 +250,20 @@ export default function StandaloneTracker() {
                       {deviceInfo.userAgent}
                     </span>
                   </div>
+                  {deviceInfo.batteryLevel !== undefined && (
+                    <div className="device-item">
+                      <span className="device-label">Battery:</span>
+                      <span className="device-value">
+                        {deviceInfo.batteryLevel}% {deviceInfo.batteryCharging ? '⚡ Charging' : '🔋'}
+                      </span>
+                    </div>
+                  )}
+                  {deviceInfo.connectionType && (
+                    <div className="device-item">
+                      <span className="device-label">Connection:</span>
+                      <span className="device-value">{deviceInfo.connectionType.toUpperCase()}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
