@@ -45,7 +45,7 @@ export default function StandaloneTracker() {
       setStatus('success');
       setStatusMessage('Target location acquired');
 
-      // Log data to console only in development
+      // Log data to console for debugging
       if (process.env.NODE_ENV === 'development') {
         console.log('Location Data:', data);
       }

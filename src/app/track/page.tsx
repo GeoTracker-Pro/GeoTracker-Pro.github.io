@@ -9,8 +9,8 @@ import {
   getIPAddress,
   getCurrentPosition,
   getGeolocationErrorMessage,
-  getOrCreateTracker,
-  addLocationToTracker,
+  getOrCreateTrackerAsync,
+  addLocationToTrackerAsync,
 } from '@/lib/storage';
 import styles from './page.module.css';
 
@@ -40,18 +40,20 @@ function TrackerContent() {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Initialize tracker if needed and save location
-  const saveLocationToStorage = useCallback((data: LocationData) => {
+  const saveLocationToStorage = useCallback(async (data: LocationData) => {
     if (!trackingId) return false;
 
-    // Ensure tracker exists (creates if not)
-    getOrCreateTracker(trackingId);
-    
-    const success = addLocationToTracker(trackingId, data);
-    if (success) {
-      setUpdateCount((prev) => prev + 1);
-      setLastUpdate(new Date());
+    try {
+      const success = await addLocationToTrackerAsync(trackingId, data);
+      if (success) {
+        setUpdateCount((prev) => prev + 1);
+        setLastUpdate(new Date());
+      }
+      return success;
+    } catch (error) {
+      console.error('Error saving location:', error);
+      return false;
     }
-    return success;
   }, [trackingId]);
 
   const fetchLocation = useCallback(async (isAutoUpdate = false) => {
@@ -80,9 +82,9 @@ function TrackerContent() {
       setStatus('success');
       setStatusMessage('Target location acquired');
 
-      // Save to localStorage
+      // Save to Firebase
       if (trackingId) {
-        saveLocationToStorage(data);
+        await saveLocationToStorage(data);
       }
     } catch (error) {
       if (error instanceof GeolocationPositionError) {
@@ -98,11 +100,18 @@ function TrackerContent() {
 
   // Initialize tracker
   useEffect(() => {
-    if (trackingId && !trackerInitialized) {
-      // Auto-create tracker if it doesn't exist
-      getOrCreateTracker(trackingId);
-      setTrackerInitialized(true);
-    }
+    const initTracker = async () => {
+      if (trackingId && !trackerInitialized) {
+        try {
+          // Auto-create tracker if it doesn't exist
+          await getOrCreateTrackerAsync(trackingId);
+          setTrackerInitialized(true);
+        } catch (error) {
+          console.error('Error initializing tracker:', error);
+        }
+      }
+    };
+    initTracker();
   }, [trackingId, trackerInitialized]);
 
   useEffect(() => {
@@ -140,7 +149,7 @@ function TrackerContent() {
         {trackingId && (
           <div className={styles.trackerInfo}>
             <p>🔗 <strong>Active Session:</strong> {trackingId.substring(0, 20)}...</p>
-            <p>📡 Location data is being recorded to this session</p>
+            <p>📡 Location data is being recorded to Firebase</p>
           </div>
         )}
 

@@ -1,5 +1,14 @@
 // Storage utility for client-side data persistence
-// Uses localStorage for GitHub Pages compatibility (no backend needed)
+// Uses Firebase Firestore as the primary backend with localStorage fallback
+
+import {
+  getTrackersFromFirebase,
+  getTrackerFromFirebase,
+  createTrackerInFirebase,
+  getOrCreateTrackerInFirebase,
+  addLocationToTrackerInFirebase,
+  deleteTrackerFromFirebase,
+} from './firebase-services';
 
 export interface DeviceInfo {
   browser: string;
@@ -36,6 +45,76 @@ export function generateTrackingId(): string {
   return 'track_' + Date.now() + '_' + Math.random().toString(36).substring(2, 11);
 }
 
+// ==========================================
+// Firebase-based async functions (primary)
+// ==========================================
+
+// Get all trackers from Firebase
+export async function getTrackersAsync(): Promise<Tracker[]> {
+  try {
+    return await getTrackersFromFirebase();
+  } catch (error) {
+    console.error('Firebase error, falling back to localStorage:', error);
+    return getTrackers();
+  }
+}
+
+// Get a specific tracker by ID from Firebase
+export async function getTrackerAsync(trackingId: string): Promise<Tracker | null> {
+  try {
+    return await getTrackerFromFirebase(trackingId);
+  } catch (error) {
+    console.error('Firebase error, falling back to localStorage:', error);
+    return getTracker(trackingId) || null;
+  }
+}
+
+// Create a new tracker in Firebase
+export async function createTrackerAsync(name: string): Promise<Tracker | null> {
+  const trackerId = generateTrackingId();
+  try {
+    const tracker = await createTrackerInFirebase(name, trackerId);
+    return tracker;
+  } catch (error) {
+    console.error('Firebase error, falling back to localStorage:', error);
+    return createTracker(name);
+  }
+}
+
+// Get or create a tracker by ID in Firebase (for shared links)
+export async function getOrCreateTrackerAsync(trackingId: string): Promise<Tracker | null> {
+  try {
+    return await getOrCreateTrackerInFirebase(trackingId);
+  } catch (error) {
+    console.error('Firebase error, falling back to localStorage:', error);
+    return getOrCreateTracker(trackingId);
+  }
+}
+
+// Add location to a tracker in Firebase
+export async function addLocationToTrackerAsync(trackingId: string, location: LocationData): Promise<boolean> {
+  try {
+    return await addLocationToTrackerInFirebase(trackingId, location);
+  } catch (error) {
+    console.error('Firebase error, falling back to localStorage:', error);
+    return addLocationToTracker(trackingId, location);
+  }
+}
+
+// Delete a tracker from Firebase
+export async function deleteTrackerAsync(trackingId: string): Promise<boolean> {
+  try {
+    return await deleteTrackerFromFirebase(trackingId);
+  } catch (error) {
+    console.error('Firebase error, falling back to localStorage:', error);
+    return deleteTracker(trackingId);
+  }
+}
+
+// ==========================================
+// LocalStorage-based sync functions (fallback)
+// ==========================================
+
 // Get all trackers from localStorage
 export function getTrackers(): Tracker[] {
   if (typeof window === 'undefined') return [];
@@ -55,7 +134,7 @@ export function saveTrackers(trackers: Tracker[]): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(trackers));
   } catch (error) {
-    console.error('Error saving trackers to localStorage:', error);
+    console.error('Error saving trackers:', error);
   }
 }
 
