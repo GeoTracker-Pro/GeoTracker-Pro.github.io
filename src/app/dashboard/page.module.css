@@ -213,7 +213,6 @@
 
 .trackersList h2 {
   color: #00ff88;
-  margin-bottom: 20px;
   font-family: 'Orbitron', sans-serif;
   font-size: 16px;
   text-transform: uppercase;
@@ -457,4 +456,126 @@
   font-size: 48px;
   margin-bottom: 15px;
   filter: grayscale(1) opacity(0.5);
+}
+
+.trackersListHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.trackersListHeader h2 {
+  color: #00ff88;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 0;
+}
+
+.searchBox {
+  flex: 0 1 280px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid rgba(0, 204, 255, 0.3);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.5);
+  color: #e0e0e0;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  transition: all 0.3s;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #00ccff;
+  box-shadow: 0 0 15px rgba(0, 204, 255, 0.3);
+}
+
+.searchInput::placeholder {
+  color: #555;
+}
+
+.exportBtn {
+  background: rgba(0, 204, 255, 0.1);
+  border: 1px solid rgba(0, 204, 255, 0.3);
+  cursor: pointer;
+  font-size: 10px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.3s;
+  color: #00ccff;
+  font-family: 'Share Tech Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.exportBtn:hover {
+  background: rgba(0, 204, 255, 0.2);
+  box-shadow: 0 0 10px rgba(0, 204, 255, 0.3);
+}
+
+.distanceBadge {
+  display: inline-block;
+  background: rgba(255, 204, 0, 0.15);
+  color: #ffcc00;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  border: 1px solid rgba(255, 204, 0, 0.3);
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.timeline {
+  position: relative;
+  padding-left: 24px;
+}
+
+.timelineItem {
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.timelineDot {
+  position: absolute;
+  left: -24px;
+  top: 18px;
+  width: 10px;
+  height: 10px;
+  background: #00ff88;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
+  z-index: 1;
+}
+
+.timelineLine {
+  position: absolute;
+  left: -20px;
+  top: 28px;
+  width: 2px;
+  bottom: -10px;
+  background: rgba(0, 255, 136, 0.2);
+}
+
+.segmentDistance {
+  margin-left: 10px;
+  color: #ffcc00;
+  font-size: 11px;
+  background: rgba(255, 204, 0, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 204, 0, 0.2);
+}
+
+.totalDistance {
+  float: right;
+  color: #ffcc00;
+  font-size: 12px;
+  font-family: 'Share Tech Mono', monospace;
 }
