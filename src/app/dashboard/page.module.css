@@ -1012,3 +1012,208 @@
 :global([data-theme="light"]) .trackerDetails {
   border-top-color: rgba(0, 153, 77, 0.15);
 }
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .dashboardBg {
+    padding: 12px;
+    background-attachment: scroll;
+  }
+
+  .header {
+    padding: 16px;
+  }
+
+  .headerContent {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header h1 {
+    font-size: 18px;
+    letter-spacing: 1px;
+  }
+
+  .headerActions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .createTracker {
+    padding: 20px 16px;
+  }
+
+  .trackersList {
+    padding: 20px 16px;
+  }
+
+  .trackerHeader {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .trackerActions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .trackerInfo {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .locationCoords {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .latestLocationGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .latestLocationHeader {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .trackersListHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .searchBox {
+    flex: 1 1 100%;
+  }
+
+  .geofenceFormRow {
+    flex-direction: column;
+  }
+
+  .geofenceFormActions {
+    flex-direction: column;
+  }
+
+  .geofenceFormActions button {
+    width: 100%;
+  }
+
+  .alertItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .alertsPanelHeader {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .timelineFilters {
+    gap: 4px;
+  }
+
+  .timelineFilterBtn {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboardBg {
+    padding: 8px;
+  }
+
+  .header {
+    padding: 14px 12px;
+    margin-bottom: 16px;
+  }
+
+  .header h1 {
+    font-size: 16px;
+  }
+
+  .subtitle {
+    font-size: 11px;
+  }
+
+  .userInfo {
+    font-size: 11px;
+    padding: 6px 10px;
+  }
+
+  .navLink,
+  .logoutBtn {
+    font-size: 11px;
+    padding: 6px 10px;
+  }
+
+  .createTracker {
+    padding: 16px 12px;
+    margin-bottom: 16px;
+  }
+
+  .createTracker h2 {
+    font-size: 14px;
+    letter-spacing: 1px;
+  }
+
+  .trackersList {
+    padding: 16px 12px;
+  }
+
+  .trackerCard {
+    padding: 14px 12px;
+  }
+
+  .trackerName {
+    font-size: 14px;
+    flex-wrap: wrap;
+  }
+
+  .trackerInfo {
+    grid-template-columns: 1fr;
+  }
+
+  .locationCoords {
+    grid-template-columns: 1fr;
+  }
+
+  .latestLocationGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .linkText {
+    font-size: 11px;
+    padding: 10px;
+  }
+
+  .generatedLink {
+    padding: 14px;
+  }
+
+  .input {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .geofenceSection {
+    padding: 10px;
+  }
+
+  .geofenceItem {
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 11px;
+  }
+
+  .alertBadge {
+    font-size: 11px;
+    padding: 4px 10px;
+  }
+
+  .alertContent {
+    font-size: 11px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+}

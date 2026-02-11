@@ -63,6 +63,8 @@
 .logoImage {
   border-radius: 12px;
   object-fit: contain;
+  max-width: 100%;
+  height: auto;
 }
 
 .container h1 {
@@ -264,4 +266,63 @@
 
 .passwordToggle:hover {
   opacity: 1;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .loginBg {
+    background-attachment: scroll;
+  }
+}
+
+@media (max-width: 480px) {
+  .loginBg {
+    padding: 12px;
+    background-attachment: scroll;
+  }
+
+  .container {
+    padding: 24px 18px;
+    max-width: 100%;
+  }
+
+  .container h1 {
+    font-size: 20px;
+    letter-spacing: 2px;
+  }
+
+  .logo {
+    font-size: 48px;
+    margin-bottom: 10px;
+  }
+
+  .logoImage {
+    width: 64px;
+    height: 64px;
+  }
+
+  .subtitle {
+    font-size: 12px;
+    margin-bottom: 20px;
+  }
+
+  .input {
+    padding: 12px;
+    font-size: 16px;
+  }
+
+  .loginBtn,
+  .guestBtn {
+    padding: 12px;
+    font-size: 13px;
+  }
+
+  .infoBox {
+    padding: 12px;
+    font-size: 12px;
+  }
+
+  .toggleBtn {
+    font-size: 12px;
+  }
 }

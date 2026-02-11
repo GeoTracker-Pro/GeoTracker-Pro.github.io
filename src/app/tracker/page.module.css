@@ -86,3 +86,50 @@
   color: #00ff88;
   text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
 }
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .gradientBg {
+    padding: 12px;
+    background-attachment: scroll;
+  }
+
+  .container {
+    padding: 24px 16px;
+  }
+
+  .container h1 {
+    font-size: 18px;
+    letter-spacing: 2px;
+  }
+}
+
+@media (max-width: 480px) {
+  .gradientBg {
+    padding: 8px;
+    align-items: flex-start;
+    padding-top: 16px;
+  }
+
+  .container {
+    padding: 20px 14px;
+  }
+
+  .container h1 {
+    font-size: 16px;
+    letter-spacing: 1px;
+  }
+
+  .subtitle {
+    font-size: 12px;
+    margin-bottom: 20px;
+  }
+
+  .trackerInfo {
+    padding: 12px;
+  }
+
+  .trackerInfo p {
+    font-size: 12px;
+  }
+}

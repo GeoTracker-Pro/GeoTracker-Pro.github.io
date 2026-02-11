@@ -244,3 +244,80 @@
   font-size: 48px;
   margin-bottom: 15px;
 }
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .header {
+    padding: 20px;
+  }
+
+  .header h1 {
+    font-size: 24px;
+  }
+
+  .trackerInfo {
+    grid-template-columns: 1fr;
+  }
+
+  .locationCoords {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .trackerHeader {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .createTracker,
+  .trackersList {
+    padding: 20px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboardBg {
+    padding: 8px;
+  }
+
+  .header {
+    padding: 16px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+  }
+
+  .header h1 {
+    font-size: 20px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+  }
+
+  .createTracker,
+  .trackersList {
+    padding: 16px 12px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+  }
+
+  .trackerCard {
+    padding: 14px 12px;
+  }
+
+  .trackerName {
+    font-size: 16px;
+  }
+
+  .locationCoords {
+    grid-template-columns: 1fr;
+  }
+
+  .input {
+    padding: 10px;
+  }
+
+  .emptyState {
+    padding: 24px 16px;
+  }
+}
