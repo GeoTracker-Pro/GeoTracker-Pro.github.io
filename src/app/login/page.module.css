@@ -60,6 +60,11 @@
   filter: drop-shadow(0 0 20px rgba(0, 255, 136, 0.5));
 }
 
+.logoImage {
+  border-radius: 12px;
+  object-fit: contain;
+}
+
 .container h1 {
   color: #00ff88;
   margin-bottom: 10px;
