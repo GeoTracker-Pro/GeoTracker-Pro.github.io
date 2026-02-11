@@ -31,12 +31,23 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   // Network-first strategy for API calls and dynamic content
-  if (
-    event.request.url.includes('firebaseapp.com') ||
-    event.request.url.includes('googleapis.com') ||
-    event.request.url.includes('api.ipify.org') ||
-    event.request.method !== 'GET'
-  ) {
+  // Skip non-GET requests
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
+  // Skip external API requests using hostname checks
+  try {
+    const url = new URL(event.request.url);
+    const hostname = url.hostname;
+    if (
+      hostname.endsWith('.firebaseapp.com') ||
+      hostname.endsWith('.googleapis.com') ||
+      hostname === 'api.ipify.org'
+    ) {
+      return;
+    }
+  } catch {
     return;
   }
 
