@@ -321,8 +321,8 @@ export async function getUsersFromFirebase(): Promise<User[]> {
         id: doc.id,
         email: data.email,
         displayName: data.displayName,
-        createdAt: data.createdAt,
-        lastLoginAt: data.lastLoginAt,
+        createdAt: timestampToString(data.createdAt),
+        lastLoginAt: data.lastLoginAt ? timestampToString(data.lastLoginAt) : undefined,
       } as User;
     });
   } catch (error) {
@@ -346,8 +346,8 @@ export async function getUserFromFirebase(userId: string): Promise<User | null> 
       id: snapshot.id,
       email: data.email,
       displayName: data.displayName,
-      createdAt: data.createdAt,
-      lastLoginAt: data.lastLoginAt,
+      createdAt: timestampToString(data.createdAt),
+      lastLoginAt: data.lastLoginAt ? timestampToString(data.lastLoginAt) : undefined,
     } as User;
   } catch (error) {
     console.error('Error getting user:', error);
