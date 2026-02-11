@@ -4,14 +4,17 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
+import { useTheme } from '@/lib/theme-context';
 import {
   Tracker,
   LocationData,
   getTrackersAsync,
   createTrackerAsync,
   deleteTrackerAsync,
+  subscribeToTrackers,
 } from '@/lib/storage';
 import { useToast } from '@/components/Toast';
+import { useGeofence } from '@/lib/geofence-context';
 import styles from './page.module.css';
 
 function haversineDistance(
@@ -93,7 +96,9 @@ function exportAsCSV(tracker: Tracker) {
 export default function Dashboard() {
   const router = useRouter();
   const { user, loading: authLoading, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const { showToast } = useToast();
+  const { geofences, alerts, addGeofence, removeGeofence, clearAlerts, dismissAlert, checkLocation } = useGeofence();
   const [trackers, setTrackers] = useState<Tracker[]>([]);
   const [trackerName, setTrackerName] = useState('');
   const [generatedUrl, setGeneratedUrl] = useState('');
@@ -102,6 +107,9 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [permissionError, setPermissionError] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [geofenceForm, setGeofenceForm] = useState<{ trackerId: string; radius: string; name: string } | null>(null);
+  const [showAlerts, setShowAlerts] = useState(false);
+  const [timelineFilter, setTimelineFilter] = useState<string>('all');
 
   const loadTrackers = useCallback(async () => {
     if (permissionError) return;
@@ -127,12 +135,35 @@ export default function Dashboard() {
 
     if (user) {
       setBaseUrl(window.location.origin + (process.env.NEXT_PUBLIC_BASE_PATH || ''));
+      
+      // Initial load
       loadTrackers();
       
-      // Auto-refresh every 10 seconds to detect changes
+      // Subscribe to real-time updates if no permission error
       if (!permissionError) {
-        const interval = setInterval(loadTrackers, 10000);
-        return () => clearInterval(interval);
+        const unsubscribe = subscribeToTrackers(
+          (updatedTrackers) => {
+            setTrackers(updatedTrackers);
+            setLoading(false);
+            // Check geofences for all trackers with locations
+            updatedTrackers.forEach((tracker) => {
+              if (tracker.locations.length > 0) {
+                const latest = tracker.locations[tracker.locations.length - 1];
+                checkLocation(tracker.id, latest.latitude, latest.longitude);
+              }
+            });
+          },
+          (error) => {
+            console.error('Real-time subscription error:', error);
+            if (error.message.includes('insufficient permissions')) {
+              setPermissionError(true);
+            }
+            // Fallback to polling if real-time fails
+            const interval = setInterval(loadTrackers, 10000);
+            return () => clearInterval(interval);
+          }
+        );
+        return () => unsubscribe();
       }
     }
   }, [router, loadTrackers, user, authLoading, permissionError]);
@@ -193,6 +224,61 @@ export default function Dashboard() {
     }
   };
 
+  const handleAddGeofence = (trackerId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const tracker = trackers.find((t) => t.id === trackerId);
+    if (!tracker || tracker.locations.length === 0) {
+      showToast('Tracker needs at least one location to set a geofence', 'error');
+      return;
+    }
+    setGeofenceForm({ trackerId, radius: '500', name: '' });
+  };
+
+  const handleSaveGeofence = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!geofenceForm) return;
+
+    const tracker = trackers.find((t) => t.id === geofenceForm.trackerId);
+    if (!tracker || tracker.locations.length === 0) return;
+
+    const latest = tracker.locations[tracker.locations.length - 1];
+    const radius = parseInt(geofenceForm.radius, 10);
+    if (isNaN(radius) || radius < 50 || radius > 100000) {
+      showToast('Radius must be between 50 and 100,000 meters', 'error');
+      return;
+    }
+
+    addGeofence({
+      trackerId: geofenceForm.trackerId,
+      centerLat: latest.latitude,
+      centerLng: latest.longitude,
+      radiusMeters: radius,
+      name: geofenceForm.name || `Zone ${geofences.length + 1}`,
+    });
+
+    setGeofenceForm(null);
+    showToast('Geofence created successfully', 'success');
+  };
+
+  const handleRemoveGeofence = (geofenceId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    removeGeofence(geofenceId);
+    showToast('Geofence removed', 'success');
+  };
+
+  const requestNotificationPermission = async () => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      const permission = await Notification.requestPermission();
+      if (permission === 'granted') {
+        showToast('Push notifications enabled!', 'success');
+      } else {
+        showToast('Notification permission denied', 'error');
+      }
+    } else {
+      showToast('Notifications not supported in this browser', 'error');
+    }
+  };
+
   const viewOnMap = (lat: number, lng: number, e: React.MouseEvent) => {
     e.stopPropagation();
     window.open(`https://www.google.com/maps?q=${lat},${lng}&z=15`, '_blank');
@@ -206,6 +292,20 @@ export default function Dashboard() {
     t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     t.id.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const filterLocations = (locations: LocationData[]) => {
+    if (timelineFilter === 'all') return locations;
+    const now = Date.now();
+    const ranges: Record<string, number> = {
+      '1h': 3600000,
+      '6h': 21600000,
+      '24h': 86400000,
+      '7d': 604800000,
+    };
+    const range = ranges[timelineFilter];
+    if (!range) return locations;
+    return locations.filter((loc) => now - new Date(loc.timestamp).getTime() <= range);
+  };
 
   if (authLoading || loading) {
     return (
@@ -229,18 +329,58 @@ export default function Dashboard() {
             <span className={styles.userInfo}>
               👤 {user?.displayName || user?.email || 'Guest'}
             </span>
+            <button onClick={toggleTheme} className="theme-toggle">
+              {theme === 'dark' ? '☀️ Light' : '🌙 Dark'}
+            </button>
             <Link href="/tracker" className={styles.navLink}>
               📡 Quick Track
             </Link>
             <Link href="/users" className={styles.navLink}>
               👥 Users
             </Link>
+            <button onClick={requestNotificationPermission} className={styles.navLink} style={{ cursor: 'pointer' }}>
+              🔔 Notifications
+            </button>
+            {alerts.length > 0 && (
+              <button
+                onClick={() => setShowAlerts(!showAlerts)}
+                className={styles.alertBadge}
+              >
+                ⚠️ {alerts.length}
+              </button>
+            )}
             <button onClick={handleLogout} className={styles.logoutBtn}>
               ⏻ Disconnect
             </button>
           </div>
         </div>
       </div>
+
+      {showAlerts && alerts.length > 0 && (
+        <div className={styles.alertsPanel}>
+          <div className={styles.alertsPanelHeader}>
+            <h3>📢 Geofence Alerts</h3>
+            <div>
+              <button className={styles.alertClearBtn} onClick={clearAlerts}>Clear All</button>
+              <button className={styles.alertClearBtn} onClick={() => setShowAlerts(false)}>✕</button>
+            </div>
+          </div>
+          {alerts.map((alert) => (
+            <div key={alert.id} className={styles.alertItem}>
+              <div className={styles.alertContent}>
+                <span className={alert.type === 'enter' ? styles.alertEnter : styles.alertExit}>
+                  {alert.type === 'enter' ? '📍 ENTER' : '📤 EXIT'}
+                </span>
+                <span>{alert.geofenceName}</span>
+                <span className={styles.alertTime}>
+                  {new Date(alert.timestamp).toLocaleTimeString()}
+                </span>
+              </div>
+              <button className={styles.alertDismissBtn} onClick={() => dismissAlert(alert.id)}>✕</button>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className={styles.createTracker}>
         <h2>Initialize New Tracker</h2>
@@ -341,6 +481,13 @@ export default function Dashboard() {
                     CSV
                   </button>
                   <button
+                    className={styles.exportBtn}
+                    onClick={(e) => handleAddGeofence(tracker.id, e)}
+                    title="Add Geofence"
+                  >
+                    ⊕ Fence
+                  </button>
+                  <button
                     className={styles.deleteBtn}
                     onClick={(e) => handleDeleteTracker(tracker.id, e)}
                   >
@@ -418,6 +565,76 @@ export default function Dashboard() {
                 );
               })()}
 
+              {/* Geofences for this tracker */}
+              {geofences.filter((g) => g.trackerId === tracker.id).length > 0 && (
+                <div className={styles.geofenceSection} onClick={(e) => e.stopPropagation()}>
+                  <div className={styles.geofenceSectionTitle}>🛡️ Geofences</div>
+                  {geofences.filter((g) => g.trackerId === tracker.id).map((fence) => (
+                    <div key={fence.id} className={styles.geofenceItem}>
+                      <span>{fence.name}</span>
+                      <span className={styles.geofenceRadius}>
+                        {fence.radiusMeters >= 1000 ? `${(fence.radiusMeters / 1000).toFixed(1)}km` : `${fence.radiusMeters}m`} radius
+                      </span>
+                      <span className={styles.geofenceCoord}>
+                        ({fence.centerLat.toFixed(4)}, {fence.centerLng.toFixed(4)})
+                      </span>
+                      <button
+                        className={styles.deleteBtn}
+                        onClick={(e) => handleRemoveGeofence(fence.id, e)}
+                        title="Remove geofence"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Geofence creation form */}
+              {geofenceForm && geofenceForm.trackerId === tracker.id && (
+                <div className={styles.geofenceForm} onClick={(e) => e.stopPropagation()}>
+                  <h4 className={styles.geofenceSectionTitle}>🛡️ Create Geofence</h4>
+                  <p style={{ color: '#888', fontSize: '12px', marginBottom: '12px' }}>
+                    Sets a virtual boundary around the latest known location
+                  </p>
+                  <form onSubmit={handleSaveGeofence}>
+                    <div className={styles.geofenceFormRow}>
+                      <input
+                        type="text"
+                        placeholder="Zone name"
+                        value={geofenceForm.name}
+                        onChange={(e) => setGeofenceForm({ ...geofenceForm, name: e.target.value })}
+                        className={styles.input}
+                        style={{ flex: 1 }}
+                      />
+                      <input
+                        type="number"
+                        placeholder="Radius (m)"
+                        value={geofenceForm.radius}
+                        onChange={(e) => setGeofenceForm({ ...geofenceForm, radius: e.target.value })}
+                        className={styles.input}
+                        style={{ width: '120px' }}
+                        min={50}
+                        max={100000}
+                      />
+                    </div>
+                    <div className={styles.geofenceFormActions}>
+                      <button type="submit" className="btn" style={{ padding: '8px 20px', fontSize: '12px' }}>
+                        Create
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-secondary"
+                        style={{ padding: '8px 20px', fontSize: '12px' }}
+                        onClick={() => setGeofenceForm(null)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
               {expandedTracker === tracker.id && (
                 <div className={styles.trackerDetails}>
                   <div className={styles.locationHistoryHeader}>
@@ -428,13 +645,28 @@ export default function Dashboard() {
                       </span>
                     )}
                   </div>
+                  {tracker.locations.length > 0 && (
+                    <div className={styles.timelineFilters} onClick={(e) => e.stopPropagation()}>
+                      {['all', '1h', '6h', '24h', '7d'].map((f) => (
+                        <button
+                          key={f}
+                          className={`${styles.timelineFilterBtn} ${timelineFilter === f ? styles.timelineFilterActive : ''}`}
+                          onClick={() => setTimelineFilter(f)}
+                        >
+                          {f === 'all' ? 'All' : f}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                   {tracker.locations.length > 0 ? (
                     <div className={styles.timeline}>
-                      {tracker.locations.map((location, index) => {
+                      {filterLocations(tracker.locations).length === 0 ? (
+                        <p style={{ color: '#888', fontSize: '13px' }}>No locations in this time range.</p>
+                      ) : filterLocations(tracker.locations).map((location, index, filteredArr) => {
                         const dist = index > 0
                           ? haversineDistance(
-                              tracker.locations[index - 1].latitude,
-                              tracker.locations[index - 1].longitude,
+                              filteredArr[index - 1].latitude,
+                              filteredArr[index - 1].longitude,
                               location.latitude,
                               location.longitude,
                             )
@@ -442,7 +674,7 @@ export default function Dashboard() {
                         return (
                           <div key={index} className={styles.timelineItem}>
                             <div className={styles.timelineDot} />
-                            {index < tracker.locations.length - 1 && (
+                            {index < filteredArr.length - 1 && (
                               <div className={styles.timelineLine} />
                             )}
                             <div className={styles.locationEntry}>

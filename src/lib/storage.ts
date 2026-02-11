@@ -8,6 +8,7 @@ import {
   getOrCreateTrackerInFirebase,
   addLocationToTrackerInFirebase,
   deleteTrackerFromFirebase,
+  subscribeToTrackers as subscribeToTrackersFirebase,
 } from './firebase-services';
 
 export interface DeviceInfo {
@@ -119,6 +120,14 @@ export async function deleteTrackerAsync(trackingId: string): Promise<boolean> {
     console.error('Firebase error, falling back to localStorage:', error);
     return deleteTracker(trackingId);
   }
+}
+
+// Subscribe to real-time tracker updates
+export function subscribeToTrackers(
+  callback: (trackers: Tracker[]) => void,
+  onError?: (error: Error) => void
+): () => void {
+  return subscribeToTrackersFirebase(callback, onError);
 }
 
 // ==========================================

@@ -11,6 +11,7 @@ import {
   arrayUnion,
   query,
   where,
+  onSnapshot,
   Timestamp,
   serverTimestamp,
 } from 'firebase/firestore';
@@ -365,4 +366,50 @@ export async function deleteUserFromFirebase(userId: string): Promise<boolean> {
     console.error('Error deleting user:', error);
     return false;
   }
+}
+
+// === REAL-TIME LISTENERS ===
+
+// Subscribe to real-time updates for all trackers owned by the current user
+export function subscribeToTrackers(
+  callback: (trackers: Tracker[]) => void,
+  onError?: (error: Error) => void
+): () => void {
+  const user = auth.currentUser;
+  if (!user) {
+    console.warn('Skipping Firestore subscription: waiting for user authentication');
+    return () => {};
+  }
+
+  const trackersRef = collection(db, TRACKERS_COLLECTION);
+  const q = query(trackersRef, where('userId', '==', user.uid));
+
+  const unsubscribe = onSnapshot(
+    q,
+    (snapshot) => {
+      const trackers = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          name: data.name || 'Unnamed Tracker',
+          created: timestampToString(data.created),
+          locations: data.locations || [],
+        } as Tracker;
+      });
+
+      trackers.sort((a, b) => {
+        const dateA = new Date(a.created).getTime();
+        const dateB = new Date(b.created).getTime();
+        return dateB - dateA;
+      });
+
+      callback(trackers);
+    },
+    (error) => {
+      console.error('Real-time tracker subscription error:', error);
+      if (onError) onError(error);
+    }
+  );
+
+  return unsubscribe;
 }

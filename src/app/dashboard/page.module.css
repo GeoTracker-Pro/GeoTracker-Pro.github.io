@@ -579,3 +579,436 @@
   font-size: 12px;
   font-family: 'Share Tech Mono', monospace;
 }
+
+/* Alert badge */
+.alertBadge {
+  background: rgba(255, 51, 102, 0.2);
+  color: #ff3366;
+  border: 1px solid rgba(255, 51, 102, 0.5);
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: 'Share Tech Mono', monospace;
+  transition: all 0.3s;
+  animation: pulse 2s infinite;
+}
+
+.alertBadge:hover {
+  background: rgba(255, 51, 102, 0.3);
+  box-shadow: 0 0 15px rgba(255, 51, 102, 0.3);
+}
+
+/* Alerts panel */
+.alertsPanel {
+  background: rgba(10, 10, 26, 0.95);
+  border: 1px solid rgba(255, 51, 102, 0.3);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  backdrop-filter: blur(10px);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.alertsPanelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.alertsPanelHeader h3 {
+  color: #ff3366;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.alertClearBtn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #888;
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  font-family: 'Share Tech Mono', monospace;
+  margin-left: 8px;
+  transition: all 0.3s;
+}
+
+.alertClearBtn:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #ccc;
+}
+
+.alertItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  background: rgba(255, 51, 102, 0.05);
+  border: 1px solid rgba(255, 51, 102, 0.15);
+  border-radius: 4px;
+}
+
+.alertContent {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+}
+
+.alertEnter {
+  color: #00ff88;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: 'Share Tech Mono', monospace;
+  padding: 2px 8px;
+  background: rgba(0, 255, 136, 0.1);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  border-radius: 4px;
+}
+
+.alertExit {
+  color: #ff3366;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: 'Share Tech Mono', monospace;
+  padding: 2px 8px;
+  background: rgba(255, 51, 102, 0.1);
+  border: 1px solid rgba(255, 51, 102, 0.3);
+  border-radius: 4px;
+}
+
+.alertTime {
+  color: #666;
+  font-size: 11px;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.alertDismissBtn {
+  background: transparent;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 6px;
+  transition: color 0.3s;
+}
+
+.alertDismissBtn:hover {
+  color: #ff3366;
+}
+
+/* Geofence section */
+.geofenceSection {
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(255, 204, 0, 0.03);
+  border: 1px solid rgba(255, 204, 0, 0.15);
+  border-radius: 4px;
+}
+
+.geofenceSectionTitle {
+  color: #ffcc00;
+  font-size: 12px;
+  font-family: 'Orbitron', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+
+.geofenceItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  font-size: 12px;
+  color: #e0e0e0;
+  border-bottom: 1px solid rgba(255, 204, 0, 0.08);
+}
+
+.geofenceItem:last-child {
+  border-bottom: none;
+}
+
+.geofenceRadius {
+  color: #ffcc00;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+}
+
+.geofenceCoord {
+  color: #666;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+}
+
+.geofenceForm {
+  margin-top: 12px;
+  padding: 16px;
+  background: rgba(255, 204, 0, 0.03);
+  border: 1px solid rgba(255, 204, 0, 0.2);
+  border-radius: 4px;
+}
+
+.geofenceFormRow {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.geofenceFormActions {
+  display: flex;
+  gap: 10px;
+}
+
+/* Timeline filters */
+.timelineFilters {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.timelineFilterBtn {
+  background: rgba(0, 204, 255, 0.05);
+  border: 1px solid rgba(0, 204, 255, 0.2);
+  color: #888;
+  padding: 5px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  font-family: 'Share Tech Mono', monospace;
+  transition: all 0.3s;
+}
+
+.timelineFilterBtn:hover {
+  background: rgba(0, 204, 255, 0.1);
+  color: #00ccff;
+}
+
+.timelineFilterActive {
+  background: rgba(0, 204, 255, 0.15);
+  color: #00ccff;
+  border-color: rgba(0, 204, 255, 0.5);
+}
+
+/* Light mode overrides */
+:global([data-theme="light"]) .dashboardBg {
+  background-image: none;
+  background-color: #f0f4f8;
+}
+
+:global([data-theme="light"]) .dashboardBg::before {
+  background: linear-gradient(135deg, rgba(240, 244, 248, 0.98) 0%, rgba(230, 236, 244, 0.98) 100%);
+}
+
+:global([data-theme="light"]) .header {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 153, 77, 0.2);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+:global([data-theme="light"]) .header h1 {
+  color: #00994d;
+  text-shadow: none;
+}
+
+:global([data-theme="light"]) .subtitle {
+  color: #666;
+}
+
+:global([data-theme="light"]) .userInfo {
+  background: rgba(0, 153, 77, 0.08);
+  color: #00994d;
+  border-color: rgba(0, 153, 77, 0.2);
+}
+
+:global([data-theme="light"]) .navLink {
+  color: #0088aa;
+  background: rgba(0, 136, 170, 0.08);
+  border-color: rgba(0, 136, 170, 0.2);
+}
+
+:global([data-theme="light"]) .navLink:hover {
+  background: rgba(0, 136, 170, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 136, 170, 0.15);
+}
+
+:global([data-theme="light"]) .logoutBtn {
+  background: rgba(204, 34, 68, 0.08);
+  color: #cc2244;
+  border-color: rgba(204, 34, 68, 0.2);
+}
+
+:global([data-theme="light"]) .logoutBtn:hover {
+  background: rgba(204, 34, 68, 0.15);
+}
+
+:global([data-theme="light"]) .createTracker,
+:global([data-theme="light"]) .trackersList {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 153, 77, 0.15);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+:global([data-theme="light"]) .createTracker h2,
+:global([data-theme="light"]) .trackersList h2 {
+  color: #00994d;
+}
+
+:global([data-theme="light"]) .input {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 153, 77, 0.2);
+  color: #1a1a2e;
+}
+
+:global([data-theme="light"]) .input:focus {
+  border-color: #00994d;
+  box-shadow: 0 0 8px rgba(0, 153, 77, 0.15);
+}
+
+:global([data-theme="light"]) .input::placeholder {
+  color: #999;
+}
+
+:global([data-theme="light"]) .generatedLink {
+  background: rgba(0, 153, 77, 0.06);
+  border-color: rgba(0, 153, 77, 0.2);
+}
+
+:global([data-theme="light"]) .generatedLink h3 {
+  color: #00994d;
+}
+
+:global([data-theme="light"]) .linkText {
+  background: rgba(0, 0, 0, 0.03);
+  color: #0088aa;
+  border-color: rgba(0, 136, 170, 0.2);
+}
+
+:global([data-theme="light"]) .trackerCard {
+  background: rgba(0, 153, 77, 0.03);
+  border-left-color: #00994d;
+  border-top-color: rgba(0, 153, 77, 0.1);
+  border-right-color: rgba(0, 153, 77, 0.1);
+  border-bottom-color: rgba(0, 153, 77, 0.1);
+}
+
+:global([data-theme="light"]) .trackerCard:hover {
+  box-shadow: 0 2px 12px rgba(0, 153, 77, 0.12);
+  background: rgba(0, 153, 77, 0.05);
+}
+
+:global([data-theme="light"]) .trackerName {
+  color: #00994d;
+}
+
+:global([data-theme="light"]) .trackerId {
+  color: #888;
+}
+
+:global([data-theme="light"]) .locationsCount {
+  background: rgba(0, 136, 170, 0.1);
+  color: #0088aa;
+  border-color: rgba(0, 136, 170, 0.2);
+}
+
+:global([data-theme="light"]) .deleteBtn {
+  border-color: rgba(204, 34, 68, 0.2);
+  color: #cc2244;
+}
+
+:global([data-theme="light"]) .deleteBtn:hover {
+  background: rgba(204, 34, 68, 0.08);
+}
+
+:global([data-theme="light"]) .exportBtn {
+  background: rgba(0, 136, 170, 0.08);
+  border-color: rgba(0, 136, 170, 0.2);
+  color: #0088aa;
+}
+
+:global([data-theme="light"]) .exportBtn:hover {
+  background: rgba(0, 136, 170, 0.15);
+}
+
+:global([data-theme="light"]) .latestLocationSummary {
+  background: rgba(0, 136, 170, 0.04);
+  border-color: rgba(0, 136, 170, 0.15);
+}
+
+:global([data-theme="light"]) .latestLocationTitle {
+  color: #0088aa;
+}
+
+:global([data-theme="light"]) .statusActive {
+  color: #00994d;
+  background: rgba(0, 153, 77, 0.08);
+  border-color: rgba(0, 153, 77, 0.2);
+}
+
+:global([data-theme="light"]) .locationHistoryHeader {
+  color: #0088aa;
+  border-bottom-color: rgba(0, 136, 170, 0.15);
+}
+
+:global([data-theme="light"]) .locationEntry {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 153, 77, 0.1);
+}
+
+:global([data-theme="light"]) .locationTime {
+  color: #0088aa;
+}
+
+:global([data-theme="light"]) .coordLabel {
+  color: #888;
+}
+
+:global([data-theme="light"]) .coordValue {
+  color: #1a1a2e;
+}
+
+:global([data-theme="light"]) .searchInput {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 136, 170, 0.2);
+  color: #1a1a2e;
+}
+
+:global([data-theme="light"]) .searchInput:focus {
+  border-color: #0088aa;
+  box-shadow: 0 0 8px rgba(0, 136, 170, 0.15);
+}
+
+:global([data-theme="light"]) .searchInput::placeholder {
+  color: #999;
+}
+
+:global([data-theme="light"]) .timelineDot {
+  background: #00994d;
+  box-shadow: 0 0 6px rgba(0, 153, 77, 0.4);
+}
+
+:global([data-theme="light"]) .timelineLine {
+  background: rgba(0, 153, 77, 0.2);
+}
+
+:global([data-theme="light"]) .distanceBadge {
+  background: rgba(204, 153, 0, 0.1);
+  color: #cc9900;
+  border-color: rgba(204, 153, 0, 0.2);
+}
+
+:global([data-theme="light"]) .emptyState {
+  color: #888;
+}
+
+:global([data-theme="light"]) .trackerDetails {
+  border-top-color: rgba(0, 153, 77, 0.15);
+}
