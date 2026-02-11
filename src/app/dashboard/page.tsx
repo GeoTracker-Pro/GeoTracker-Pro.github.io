@@ -44,38 +44,50 @@ function totalDistance(locations: LocationData[]): string {
   return formatDistance(total);
 }
 
+function sanitizeFilename(name: string): string {
+  return name.replace(/[^a-zA-Z0-9_-]/g, '_');
+}
+
+function csvEscape(value: string | number): string {
+  const str = String(value);
+  if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+}
+
 function exportAsJSON(tracker: Tracker) {
   const data = JSON.stringify(tracker, null, 2);
   const blob = new Blob([data], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `${tracker.name.replace(/\s+/g, '_')}_${tracker.id}.json`;
+  a.download = `${sanitizeFilename(tracker.name)}_${tracker.id}.json`;
   a.click();
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 100);
 }
 
 function exportAsCSV(tracker: Tracker) {
   const headers = ['Timestamp', 'Latitude', 'Longitude', 'Accuracy (m)', 'Browser', 'OS', 'Platform', 'Screen', 'IP Address'];
   const rows = tracker.locations.map((loc) => [
-    loc.timestamp,
+    csvEscape(loc.timestamp),
     loc.latitude,
     loc.longitude,
     loc.accuracy,
-    loc.deviceInfo?.browser || '',
-    loc.deviceInfo?.os || '',
-    loc.deviceInfo?.platform || '',
-    loc.deviceInfo?.screen || '',
-    loc.ip || '',
+    csvEscape(loc.deviceInfo?.browser || ''),
+    csvEscape(loc.deviceInfo?.os || ''),
+    csvEscape(loc.deviceInfo?.platform || ''),
+    csvEscape(loc.deviceInfo?.screen || ''),
+    csvEscape(loc.ip || ''),
   ]);
   const csv = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
   const blob = new Blob([csv], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `${tracker.name.replace(/\s+/g, '_')}_${tracker.id}.csv`;
+  a.download = `${sanitizeFilename(tracker.name)}_${tracker.id}.csv`;
   a.click();
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 100);
 }
 
 export default function Dashboard() {
