@@ -1,20 +1,30 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow authenticated users to manage trackers
-    match /trackers/{trackerId} {
-      // Authenticated users can read and create trackers
-      allow read, create: if request.auth != null;
-      // Only the tracker owner can delete their trackers
-      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
-      // Allow anyone to update trackers (for adding location data from shared tracking links)
-      allow update: if true;
+    
+    // Users collection - users can only read/write their own document
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
     
-    // Allow authenticated users to read all users, but only write their own
-    match /users/{userId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == userId;
+    // Trackers collection - users can only access their own trackers
+    match /trackers/{trackerId} {
+      // Allow reading if user owns the tracker
+      allow read: if request.auth != null && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Allow creating if user sets themselves as owner
+      allow create: if request.auth != null && 
+                      request.resource.data.userId == request.auth.uid;
+      
+      // Allow updating/deleting if user owns the tracker
+      allow update, delete: if request.auth != null && 
+                              resource.data.userId == request.auth.uid;
+    }
+    
+    // Location updates subcollection
+    match /trackers/{trackerId}/locations/{locationId} {
+      allow read, write: if request.auth != null;
     }
   }
 }

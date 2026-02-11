@@ -10,6 +10,7 @@ import {
   deleteDoc,
   arrayUnion,
   query,
+  where,
   orderBy,
   Timestamp,
   serverTimestamp,
@@ -58,15 +59,16 @@ function createTrackerData(name: string, userId?: string) {
 
 // === TRACKER OPERATIONS ===
 
-// Get all trackers
+// Get all trackers for the current user
 export async function getTrackersFromFirebase(): Promise<Tracker[]> {
-  if (!isAuthenticated()) {
+  const user = auth.currentUser;
+  if (!user) {
     console.warn('Skipping Firestore read: waiting for user authentication');
     return [];
   }
   try {
     const trackersRef = collection(db, TRACKERS_COLLECTION);
-    const q = query(trackersRef, orderBy('created', 'desc'));
+    const q = query(trackersRef, where('userId', '==', user.uid), orderBy('created', 'desc'));
     const snapshot = await getDocs(q);
     
     return snapshot.docs.map((doc) => {
