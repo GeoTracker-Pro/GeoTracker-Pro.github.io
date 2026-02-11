@@ -6,15 +6,82 @@ import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
 import {
   Tracker,
+  LocationData,
   getTrackersAsync,
   createTrackerAsync,
   deleteTrackerAsync,
 } from '@/lib/storage';
+import { useToast } from '@/components/Toast';
 import styles from './page.module.css';
+
+function haversineDistance(
+  lat1: number, lon1: number,
+  lat2: number, lon2: number,
+): number {
+  const R = 6371e3;
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function formatDistance(meters: number): string {
+  if (meters < 1000) return `${meters.toFixed(0)}m`;
+  return `${(meters / 1000).toFixed(2)}km`;
+}
+
+function totalDistance(locations: LocationData[]): string {
+  let total = 0;
+  for (let i = 1; i < locations.length; i++) {
+    total += haversineDistance(
+      locations[i - 1].latitude, locations[i - 1].longitude,
+      locations[i].latitude, locations[i].longitude,
+    );
+  }
+  return formatDistance(total);
+}
+
+function exportAsJSON(tracker: Tracker) {
+  const data = JSON.stringify(tracker, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${tracker.name.replace(/\s+/g, '_')}_${tracker.id}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportAsCSV(tracker: Tracker) {
+  const headers = ['Timestamp', 'Latitude', 'Longitude', 'Accuracy (m)', 'Browser', 'OS', 'Platform', 'Screen', 'IP Address'];
+  const rows = tracker.locations.map((loc) => [
+    loc.timestamp,
+    loc.latitude,
+    loc.longitude,
+    loc.accuracy,
+    loc.deviceInfo?.browser || '',
+    loc.deviceInfo?.os || '',
+    loc.deviceInfo?.platform || '',
+    loc.deviceInfo?.screen || '',
+    loc.ip || '',
+  ]);
+  const csv = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${tracker.name.replace(/\s+/g, '_')}_${tracker.id}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 export default function Dashboard() {
   const router = useRouter();
   const { user, loading: authLoading, logout } = useAuth();
+  const { showToast } = useToast();
   const [trackers, setTrackers] = useState<Tracker[]>([]);
   const [trackerName, setTrackerName] = useState('');
   const [generatedUrl, setGeneratedUrl] = useState('');
@@ -22,6 +89,7 @@ export default function Dashboard() {
   const [baseUrl, setBaseUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [permissionError, setPermissionError] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const loadTrackers = useCallback(async () => {
     if (permissionError) return;
@@ -59,7 +127,7 @@ export default function Dashboard() {
 
   const handleCreateTracker = async () => {
     if (!trackerName.trim()) {
-      alert('Please enter a tracker designation');
+      showToast('Please enter a tracker designation', 'error');
       return;
     }
 
@@ -69,14 +137,15 @@ export default function Dashboard() {
       setGeneratedUrl(url);
       setTrackerName('');
       loadTrackers();
+      showToast('Tracker created successfully', 'success');
     } else {
-      alert('Failed to create tracker. Please try again.');
+      showToast('Failed to create tracker. Please try again.', 'error');
     }
   };
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(generatedUrl).then(() => {
-      alert('Tracking link copied to clipboard!');
+      showToast('Tracking link copied to clipboard!', 'success');
     });
   };
 
@@ -88,6 +157,19 @@ export default function Dashboard() {
 
     await deleteTrackerAsync(trackerId);
     loadTrackers();
+    showToast('Tracker deleted successfully', 'success');
+  };
+
+  const handleExportJSON = (tracker: Tracker, e: React.MouseEvent) => {
+    e.stopPropagation();
+    exportAsJSON(tracker);
+    showToast(`Exported ${tracker.name} as JSON`, 'success');
+  };
+
+  const handleExportCSV = (tracker: Tracker, e: React.MouseEvent) => {
+    e.stopPropagation();
+    exportAsCSV(tracker);
+    showToast(`Exported ${tracker.name} as CSV`, 'success');
   };
 
   const handleLogout = async () => {
@@ -107,6 +189,11 @@ export default function Dashboard() {
   const toggleTrackerDetails = (trackerId: string) => {
     setExpandedTracker(expandedTracker === trackerId ? null : trackerId);
   };
+
+  const filteredTrackers = trackers.filter((t) =>
+    t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    t.id.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (authLoading || loading) {
     return (
@@ -173,7 +260,20 @@ export default function Dashboard() {
       </div>
 
       <div className={styles.trackersList}>
-        <h2>Active Sessions ({trackers.length})</h2>
+        <div className={styles.trackersListHeader}>
+          <h2>Active Sessions ({trackers.length})</h2>
+          {trackers.length > 0 && (
+            <div className={styles.searchBox}>
+              <input
+                type="text"
+                placeholder="🔍 Search trackers..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={styles.searchInput}
+              />
+            </div>
+          )}
+        </div>
         {permissionError ? (
           <div className={styles.emptyState}>
             <div className={styles.emptyStateIcon}>⚠️</div>
@@ -186,13 +286,13 @@ export default function Dashboard() {
               🔄 Retry
             </button>
           </div>
-        ) : trackers.length === 0 ? (
+        ) : filteredTrackers.length === 0 ? (
           <div className={styles.emptyState}>
             <div className={styles.emptyStateIcon}>📡</div>
-            <p>No active tracking sessions. Initialize your first tracker above.</p>
+            <p>{searchQuery ? 'No trackers match your search.' : 'No active tracking sessions. Initialize your first tracker above.'}</p>
           </div>
         ) : (
-          trackers.map((tracker) => (
+          filteredTrackers.map((tracker) => (
             <div
               key={tracker.id}
               className={styles.trackerCard}
@@ -209,6 +309,25 @@ export default function Dashboard() {
                   <span className={styles.locationsCount}>
                     {tracker.locations.length} coordinates
                   </span>
+                  {tracker.locations.length > 1 && (
+                    <span className={styles.distanceBadge}>
+                      📏 {totalDistance(tracker.locations)}
+                    </span>
+                  )}
+                  <button
+                    className={styles.exportBtn}
+                    onClick={(e) => handleExportJSON(tracker, e)}
+                    title="Export as JSON"
+                  >
+                    {'{ }'}
+                  </button>
+                  <button
+                    className={styles.exportBtn}
+                    onClick={(e) => handleExportCSV(tracker, e)}
+                    title="Export as CSV"
+                  >
+                    CSV
+                  </button>
                   <button
                     className={styles.deleteBtn}
                     onClick={(e) => handleDeleteTracker(tracker.id, e)}
@@ -291,67 +410,95 @@ export default function Dashboard() {
                 <div className={styles.trackerDetails}>
                   <div className={styles.locationHistoryHeader}>
                     📋 Location History ({tracker.locations.length} entries)
+                    {tracker.locations.length > 1 && (
+                      <span className={styles.totalDistance}>
+                        Total: {totalDistance(tracker.locations)}
+                      </span>
+                    )}
                   </div>
                   {tracker.locations.length > 0 ? (
-                    tracker.locations.map((location, index) => (
-                      <div key={index} className={styles.locationEntry}>
-                        <div className={styles.locationTime}>
-                          ⏱ {new Date(location.timestamp).toLocaleString()}
-                        </div>
-                        <div className={styles.locationCoords}>
-                          <div className={styles.coordItem}>
-                            <div className={styles.coordLabel}>Latitude</div>
-                            <div className={styles.coordValue}>
-                              {location.latitude.toFixed(6)}
-                            </div>
-                          </div>
-                          <div className={styles.coordItem}>
-                            <div className={styles.coordLabel}>Longitude</div>
-                            <div className={styles.coordValue}>
-                              {location.longitude.toFixed(6)}
-                            </div>
-                          </div>
-                          <div className={styles.coordItem}>
-                            <div className={styles.coordLabel}>Accuracy</div>
-                            <div className={styles.coordValue}>
-                              ±{location.accuracy.toFixed(2)}m
-                            </div>
-                          </div>
-                        </div>
-                        {location.deviceInfo && (
-                          <div className={styles.locationCoords}>
-                            <div className={styles.coordItem}>
-                              <div className={styles.coordLabel}>Device</div>
-                              <div className={styles.coordValue}>
-                                {location.deviceInfo.os} - {location.deviceInfo.browser}
+                    <div className={styles.timeline}>
+                      {tracker.locations.map((location, index) => {
+                        const dist = index > 0
+                          ? haversineDistance(
+                              tracker.locations[index - 1].latitude,
+                              tracker.locations[index - 1].longitude,
+                              location.latitude,
+                              location.longitude,
+                            )
+                          : 0;
+                        return (
+                          <div key={index} className={styles.timelineItem}>
+                            <div className={styles.timelineDot} />
+                            {index < tracker.locations.length - 1 && (
+                              <div className={styles.timelineLine} />
+                            )}
+                            <div className={styles.locationEntry}>
+                              <div className={styles.locationTime}>
+                                ⏱ {new Date(location.timestamp).toLocaleString()}
+                                {index > 0 && (
+                                  <span className={styles.segmentDistance}>
+                                    +{formatDistance(dist)}
+                                  </span>
+                                )}
                               </div>
-                            </div>
-                            <div className={styles.coordItem}>
-                              <div className={styles.coordLabel}>Screen</div>
-                              <div className={styles.coordValue}>
-                                {location.deviceInfo.screen}
-                              </div>
-                            </div>
-                            {location.ip && (
-                              <div className={styles.coordItem}>
-                                <div className={styles.coordLabel}>IP Address</div>
-                                <div className={styles.coordValue}>
-                                  {location.ip}
+                              <div className={styles.locationCoords}>
+                                <div className={styles.coordItem}>
+                                  <div className={styles.coordLabel}>Latitude</div>
+                                  <div className={styles.coordValue}>
+                                    {location.latitude.toFixed(6)}
+                                  </div>
+                                </div>
+                                <div className={styles.coordItem}>
+                                  <div className={styles.coordLabel}>Longitude</div>
+                                  <div className={styles.coordValue}>
+                                    {location.longitude.toFixed(6)}
+                                  </div>
+                                </div>
+                                <div className={styles.coordItem}>
+                                  <div className={styles.coordLabel}>Accuracy</div>
+                                  <div className={styles.coordValue}>
+                                    ±{location.accuracy.toFixed(2)}m
+                                  </div>
                                 </div>
                               </div>
-                            )}
+                              {location.deviceInfo && (
+                                <div className={styles.locationCoords}>
+                                  <div className={styles.coordItem}>
+                                    <div className={styles.coordLabel}>Device</div>
+                                    <div className={styles.coordValue}>
+                                      {location.deviceInfo.os} - {location.deviceInfo.browser}
+                                    </div>
+                                  </div>
+                                  <div className={styles.coordItem}>
+                                    <div className={styles.coordLabel}>Screen</div>
+                                    <div className={styles.coordValue}>
+                                      {location.deviceInfo.screen}
+                                    </div>
+                                  </div>
+                                  {location.ip && (
+                                    <div className={styles.coordItem}>
+                                      <div className={styles.coordLabel}>IP Address</div>
+                                      <div className={styles.coordValue}>
+                                        {location.ip}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                              <button
+                                className="btn btn-success"
+                                onClick={(e) =>
+                                  viewOnMap(location.latitude, location.longitude, e)
+                                }
+                              >
+                                🗺️ View on Map
+                              </button>
+                            </div>
                           </div>
-                        )}
-                        <button
-                          className="btn btn-success"
-                          onClick={(e) =>
-                            viewOnMap(location.latitude, location.longitude, e)
-                          }
-                        >
-                          🗺️ View on Map
-                        </button>
-                      </div>
-                    ))
+                        );
+                      })}
+                    </div>
                   ) : (
                     <p style={{ color: '#666' }}>No location data received yet. Share the tracking link to begin receiving coordinates.</p>
                   )}
