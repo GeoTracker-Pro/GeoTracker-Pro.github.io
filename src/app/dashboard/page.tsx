@@ -58,7 +58,7 @@ export default function Dashboard() {
 
     const tracker = await createTrackerAsync(trackerName);
     if (tracker) {
-      const url = `${baseUrl}/track?id=${tracker.id}`;
+      const url = `${baseUrl}/track/?id=${tracker.id}`;
       setGeneratedUrl(url);
       setTrackerName('');
       loadTrackers();
