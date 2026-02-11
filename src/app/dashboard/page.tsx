@@ -141,6 +141,7 @@ export default function Dashboard() {
       
       // Subscribe to real-time updates if no permission error
       if (!permissionError) {
+        let fallbackInterval: NodeJS.Timeout | null = null;
         const unsubscribe = subscribeToTrackers(
           (updatedTrackers) => {
             setTrackers(updatedTrackers);
@@ -159,11 +160,13 @@ export default function Dashboard() {
               setPermissionError(true);
             }
             // Fallback to polling if real-time fails
-            const interval = setInterval(loadTrackers, 10000);
-            return () => clearInterval(interval);
+            fallbackInterval = setInterval(loadTrackers, 10000);
           }
         );
-        return () => unsubscribe();
+        return () => {
+          unsubscribe();
+          if (fallbackInterval) clearInterval(fallbackInterval);
+        };
       }
     }
   }, [router, loadTrackers, user, authLoading, permissionError]);

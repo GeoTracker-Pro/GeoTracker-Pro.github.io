@@ -88,9 +88,12 @@ export function GeofenceProvider({ children }: { children: ReactNode }) {
   }, [insideStates]);
 
   const addGeofence = useCallback((geofence: Omit<Geofence, 'id' | 'createdAt'>) => {
+    const id = typeof crypto !== 'undefined' && crypto.randomUUID
+      ? `gf_${crypto.randomUUID()}`
+      : `gf_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
     const newGeofence: Geofence = {
       ...geofence,
-      id: `gf_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
+      id,
       createdAt: new Date().toISOString(),
     };
     setGeofences((prev) => [...prev, newGeofence]);
@@ -126,8 +129,11 @@ export function GeofenceProvider({ children }: { children: ReactNode }) {
       const wasInside = insideStates[stateKey];
 
       if (wasInside !== undefined && wasInside !== isInside) {
+        const alertId = typeof crypto !== 'undefined' && crypto.randomUUID
+          ? `alert_${crypto.randomUUID()}`
+          : `alert_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
         const alert: GeofenceAlert = {
-          id: `alert_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
+          id: alertId,
           geofenceId: fence.id,
           trackerId,
           type: isInside ? 'enter' : 'exit',

@@ -10,8 +10,8 @@ const STATIC_ASSETS = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS).catch(() => {
-        // Some assets may not be available during install
+      return cache.addAll(STATIC_ASSETS).catch((err) => {
+        console.warn('Failed to cache some assets during install:', err);
       });
     })
   );
