@@ -10,7 +10,7 @@ If you're seeing this error, it means Firebase Authentication is not properly en
 
 - A Google account
 - Access to [Firebase Console](https://console.firebase.google.com/)
-- The Firebase project ID: `geotracker-865d3`
+- The Firebase project ID: `geotrackerpro-e3149`
 
 ## 🚀 Step-by-Step Setup
 
@@ -18,7 +18,7 @@ If you're seeing this error, it means Firebase Authentication is not properly en
 
 1. Go to [Firebase Console](https://console.firebase.google.com/)
 2. Sign in with your Google account
-3. Select the project `geotracker-865d3` (or create it if it doesn't exist)
+3. Select the project `geotrackerpro-e3149` (or create it if it doesn't exist)
 
 ### 2. Enable Firebase Authentication
 
@@ -51,36 +51,28 @@ You need to enable **TWO** authentication methods for GeoTracker to work:
 4. Select a Cloud Firestore location (choose the one closest to your users)
 5. Click **"Enable"**
 
-### 5. Set Firestore Security Rules (⚠️ CRITICAL FOR PRODUCTION)
+### 5. Set Firestore Security Rules
 
-**This step is required to fix "Missing or insufficient permissions" errors.**
+For production use, update your Firestore security rules:
 
-#### Option A: Deploy using Firebase CLI (Recommended)
-
-The repository includes a `firestore.rules` file with the correct security rules. Deploy them using:
-
-```bash
-# Install Firebase CLI if you haven't
-npm install -g firebase-tools
-
-# Login to Firebase
-firebase login
-
-# Deploy Firestore rules only
-firebase deploy --only firestore:rules
-```
-
-#### Option B: Manual Configuration via Console
-
-1. Go to **Firestore Database** > **Rules** tab in Firebase Console
-2. Replace the rules with the following:
+1. Go to **Firestore Database** > **Rules** tab
+2. Replace with the following secure rules:
 
 ```javascript
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if request.auth != null;
+    // Allow authenticated users to read/write their own trackers
+    match /trackers/{trackerId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null;
+    }
+    
+    // Allow authenticated users to read all users, but only write their own
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
     }
   }
 }
@@ -88,21 +80,19 @@ service cloud.firestore {
 
 3. Click **"Publish"** to save the rules
 
-⚠️ **Important**: Without these rules, you will see "Missing or insufficient permissions" errors when trying to create trackers or users
-
 ### 6. Verify Your Configuration
 
 Your Firebase configuration in `src/lib/firebase.ts` should already have these values:
 
 ```javascript
 {
-  apiKey: "AIzaSyDIHDGN0nAx1CpLCurSQj3TYlR1AwZmu6g",
-  authDomain: "geotracker-865d3.firebaseapp.com",
-  projectId: "geotracker-865d3",
-  storageBucket: "geotracker-865d3.firebasestorage.app",
-  messagingSenderId: "881736898997",
-  appId: "1:881736898997:web:038371eeb1f9e1a54ce1fc",
-  measurementId: "G-TTHVMZNDX4"
+  apiKey: "AIzaSyALuk1ujZBLTWMCJJ6ebT9DdH9CtYwVJ6I",
+  authDomain: "geotrackerpro-e3149.firebaseapp.com",
+  projectId: "geotrackerpro-e3149",
+  storageBucket: "geotrackerpro-e3149.firebasestorage.app",
+  messagingSenderId: "948578635618",
+  appId: "1:948578635618:web:803ddf06141f602dd7a63b",
+  measurementId: "G-23B0643XX7"
 }
 ```
 
