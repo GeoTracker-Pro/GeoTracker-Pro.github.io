@@ -79,6 +79,7 @@
 
 .form {
   text-align: left;
+  margin-bottom: 20px;
 }
 
 .formGroup {
@@ -96,6 +97,21 @@
   font-family: 'Orbitron', sans-serif;
 }
 
+.inputGroup {
+  margin-bottom: 16px;
+}
+
+.inputGroup label {
+  display: block;
+  color: #00ff88;
+  margin-bottom: 8px;
+  font-weight: 500;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-family: 'Orbitron', sans-serif;
+}
+
 .input {
   width: 100%;
   padding: 14px;
@@ -106,6 +122,7 @@
   background: rgba(0, 0, 0, 0.5);
   color: #e0e0e0;
   font-family: 'Share Tech Mono', monospace;
+  box-sizing: border-box;
 }
 
 .input:focus {
@@ -125,6 +142,68 @@
   margin-top: 10px;
 }
 
+.loginBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.guestBtn {
+  width: 100%;
+  padding: 14px;
+  font-size: 14px;
+  background: rgba(0, 204, 255, 0.2);
+  border: 1px solid rgba(0, 204, 255, 0.5);
+  color: #00ccff;
+}
+
+.guestBtn:hover:not(:disabled) {
+  background: rgba(0, 204, 255, 0.3);
+  box-shadow: 0 0 20px rgba(0, 204, 255, 0.3);
+}
+
+.guestBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+  color: #555;
+  font-size: 12px;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(0, 255, 136, 0.2);
+}
+
+.divider span {
+  padding: 0 15px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.toggleBtn {
+  background: transparent;
+  border: none;
+  color: #00ff88;
+  cursor: pointer;
+  font-size: 13px;
+  margin-top: 20px;
+  padding: 10px;
+  transition: all 0.3s ease;
+}
+
+.toggleBtn:hover {
+  text-decoration: underline;
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+
 .infoBox {
   background: rgba(0, 204, 255, 0.1);
   border: 1px solid rgba(0, 204, 255, 0.3);
@@ -142,4 +221,15 @@
 
 .infoBox strong {
   color: #00ff88;
+}
+
+.errorBox {
+  background: rgba(255, 68, 68, 0.1);
+  border: 1px solid rgba(255, 68, 68, 0.5);
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 20px;
+  text-align: left;
+  font-size: 13px;
+  color: #ff4444;
 }

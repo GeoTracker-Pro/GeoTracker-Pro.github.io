@@ -125,6 +125,106 @@
   margin-bottom: 20px;
 }
 
+.usersList {
+  color: #e0e0e0;
+}
+
+.usersList h2 {
+  color: #00ff88;
+  font-size: 18px;
+  margin-bottom: 20px;
+  font-family: 'Orbitron', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.userCard {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(0, 255, 136, 0.2);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 15px;
+  transition: all 0.3s;
+}
+
+.userCard:hover {
+  border-color: rgba(0, 255, 136, 0.4);
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.1);
+}
+
+.userHeader {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.userAvatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: bold;
+  color: #0a0a1a;
+}
+
+.userDetails {
+  flex: 1;
+}
+
+.userName {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.userEmail {
+  font-size: 13px;
+  color: #888;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.currentBadge {
+  background: #00ccff;
+  color: #0a0a1a;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.userMeta {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding-top: 15px;
+  border-top: 1px solid rgba(0, 255, 136, 0.1);
+}
+
+.metaItem {
+  font-size: 12px;
+}
+
+.metaLabel {
+  color: #666;
+  margin-right: 5px;
+}
+
+.metaValue {
+  color: #00ff88;
+  font-family: 'Share Tech Mono', monospace;
+}
+
 .usersTable {
   overflow-x: auto;
 }

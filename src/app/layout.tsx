@@ -1,11 +1,15 @@
 import type { Metadata } from 'next';
 import '@/styles/globals.css';
+import { Providers } from './providers';
 
 export const metadata: Metadata = {
   title: 'GeoTracker - Location Tracking',
   description: 'Browser-based location tracking application',
   icons: {
-    icon: '/favicon.ico',
+    icon: [
+      { url: '/favicon.ico', type: 'image/x-icon' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
   },
 };
 
@@ -16,7 +20,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

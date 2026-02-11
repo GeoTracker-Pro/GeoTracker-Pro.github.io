@@ -45,10 +45,8 @@ export default function StandaloneTracker() {
       setStatus('success');
       setStatusMessage('Target location acquired');
 
-      // Log data to console only in development
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Location Data:', data);
-      }
+      // Log data to console (standalone mode - no server storage)
+      console.log('Location Data:', data);
     } catch (error) {
       if (error instanceof GeolocationPositionError) {
         setStatusMessage(getGeolocationErrorMessage(error));

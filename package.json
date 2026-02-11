@@ -1,7 +1,7 @@
 {
   "name": "geotracker",
   "version": "2.0.0",
-  "description": "Browser-based location tracking application with Next.js - hostable on GitHub Pages",
+  "description": "Browser-based location tracking application with Next.js and Firebase backend",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -14,11 +14,13 @@
     "tracking",
     "geolocation",
     "gps",
-    "nextjs"
+    "nextjs",
+    "firebase"
   ],
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "firebase": "^11.3.0",
     "next": "^15.2.9",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

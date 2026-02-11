@@ -3,54 +3,68 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useAuth } from '@/lib/auth-context';
 import {
   Tracker,
-  getTrackers,
-  createTracker,
-  deleteTracker,
+  getTrackersAsync,
+  createTrackerAsync,
+  deleteTrackerAsync,
 } from '@/lib/storage';
 import styles from './page.module.css';
 
 export default function Dashboard() {
   const router = useRouter();
+  const { user, loading: authLoading, logout } = useAuth();
   const [trackers, setTrackers] = useState<Tracker[]>([]);
   const [trackerName, setTrackerName] = useState('');
   const [generatedUrl, setGeneratedUrl] = useState('');
   const [expandedTracker, setExpandedTracker] = useState<string | null>(null);
   const [baseUrl, setBaseUrl] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  const loadTrackers = useCallback(() => {
-    const storedTrackers = getTrackers();
-    setTrackers(storedTrackers);
+  const loadTrackers = useCallback(async () => {
+    try {
+      const storedTrackers = await getTrackersAsync();
+      setTrackers(storedTrackers);
+    } catch (error) {
+      console.error('Error loading trackers:', error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
-    // Check if user is "authenticated" (for static deployment, just check localStorage)
-    const isAuth = localStorage.getItem('geotracker_authenticated');
-    if (!isAuth) {
+    // Check if user is authenticated
+    if (!authLoading && !user) {
       router.push('/login');
       return;
     }
 
-    setBaseUrl(window.location.origin + (process.env.NEXT_PUBLIC_BASE_PATH || ''));
-    loadTrackers();
-    
-    // Auto-refresh every 10 seconds to detect changes from other tabs
-    const interval = setInterval(loadTrackers, 10000);
-    return () => clearInterval(interval);
-  }, [router, loadTrackers]);
+    if (user) {
+      setBaseUrl(window.location.origin + (process.env.NEXT_PUBLIC_BASE_PATH || ''));
+      loadTrackers();
+      
+      // Auto-refresh every 10 seconds to detect changes
+      const interval = setInterval(loadTrackers, 10000);
+      return () => clearInterval(interval);
+    }
+  }, [router, loadTrackers, user, authLoading]);
 
-  const handleCreateTracker = () => {
+  const handleCreateTracker = async () => {
     if (!trackerName.trim()) {
       alert('Please enter a tracker designation');
       return;
     }
 
-    const tracker = createTracker(trackerName);
-    const url = `${baseUrl}/track/?id=${tracker.id}`;
-    setGeneratedUrl(url);
-    setTrackerName('');
-    loadTrackers();
+    const tracker = await createTrackerAsync(trackerName);
+    if (tracker) {
+      const url = `${baseUrl}/track?id=${tracker.id}`;
+      setGeneratedUrl(url);
+      setTrackerName('');
+      loadTrackers();
+    } else {
+      alert('Failed to create tracker. Please try again.');
+    }
   };
 
   const handleCopyLink = () => {
@@ -59,19 +73,23 @@ export default function Dashboard() {
     });
   };
 
-  const handleDeleteTracker = (trackerId: string, e: React.MouseEvent) => {
+  const handleDeleteTracker = async (trackerId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (!confirm('Are you sure you want to terminate this tracking session?')) {
       return;
     }
 
-    deleteTracker(trackerId);
+    await deleteTrackerAsync(trackerId);
     loadTrackers();
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('geotracker_authenticated');
-    router.push('/login');
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.push('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   const viewOnMap = (lat: number, lng: number, e: React.MouseEvent) => {
@@ -83,6 +101,16 @@ export default function Dashboard() {
     setExpandedTracker(expandedTracker === trackerId ? null : trackerId);
   };
 
+  if (authLoading || loading) {
+    return (
+      <div className={styles.dashboardBg}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+          <div className="spinner"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.dashboardBg}>
       <div className={styles.header}>
@@ -93,10 +121,13 @@ export default function Dashboard() {
           </div>
           <div className={styles.headerActions}>
             <span className={styles.userInfo}>
-              🔒 Secure Mode
+              👤 {user?.displayName || user?.email || 'Guest'}
             </span>
             <Link href="/tracker" className={styles.navLink}>
               📡 Quick Track
+            </Link>
+            <Link href="/users" className={styles.navLink}>
+              👥 Users
             </Link>
             <button onClick={handleLogout} className={styles.logoutBtn}>
               ⏻ Disconnect
