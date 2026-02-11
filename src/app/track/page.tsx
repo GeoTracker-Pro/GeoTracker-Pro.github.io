@@ -38,6 +38,7 @@ function TrackerContent() {
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [trackerInitialized, setTrackerInitialized] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const lastFetchTimeRef = useRef<number>(0);
 
   // Initialize tracker if needed and save location
   const saveLocationToStorage = useCallback(async (data: LocationData) => {
@@ -81,6 +82,8 @@ function TrackerContent() {
       setIpAddress(ip);
       setStatus('success');
       setStatusMessage('Target location acquired');
+
+      lastFetchTimeRef.current = Date.now();
 
       // Save to Firebase
       if (trackingId) {
@@ -127,6 +130,34 @@ function TrackerContent() {
       intervalRef.current = setInterval(() => {
         fetchLocation(true);
       }, 15000); // 15 seconds
+
+      // Handle mobile browsers where setInterval is throttled/paused
+      // when the tab is backgrounded or the screen is locked
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'visible') {
+          const elapsed = Date.now() - lastFetchTimeRef.current;
+          // If more than 15s have passed since the last fetch, fetch immediately
+          if (elapsed >= 15000) {
+            fetchLocation(true);
+          }
+          // Restart the interval to ensure consistent timing
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+          }
+          intervalRef.current = setInterval(() => {
+            fetchLocation(true);
+          }, 15000);
+        }
+      };
+
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+
+      return () => {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+        }
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+      };
     }
 
     return () => {

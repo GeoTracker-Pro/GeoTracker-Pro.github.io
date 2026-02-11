@@ -287,8 +287,8 @@ export function getCurrentPosition(): Promise<GeolocationPosition> {
 
     navigator.geolocation.getCurrentPosition(resolve, reject, {
       enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 0,
+      timeout: 30000,
+      maximumAge: 5000,
     });
   });
 }
