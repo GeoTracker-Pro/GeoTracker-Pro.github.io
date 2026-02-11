@@ -1,27 +1,26 @@
 # 📍 GeoTracker
 
-A full-stack location tracking application built with Next.js and MongoDB. Features user authentication, real-time location tracking with 15-second intervals, and a comprehensive dashboard for managing trackers.
+A browser-based location tracking application built with Next.js. Features real-time location tracking with 15-second intervals, link sharing, and a cyber-themed dashboard for managing trackers. Fully static, hostable on GitHub Pages without any backend.
 
 ![Dashboard Screenshot](https://github.com/user-attachments/assets/52e1a35e-0817-4358-9c0a-046312fbd4fd)
 
 ## 🌟 Features
 
-- **MongoDB Database**: Persistent storage for trackers, locations, and user data
-- **User Authentication**: JWT-based authentication with secure HTTP-only cookies
-- **User Management**: Admin panel for creating and managing user accounts
+- **localStorage Storage**: Client-side persistent storage for trackers and location data
+- **Link Sharing**: Share tracking links that auto-create trackers for recipients
 - **Real-time Location Tracking**: Uses HTML5 Geolocation API with 15-second auto-updates
 - **Device Information Collection**: Captures browser, OS, screen resolution, IP address
 - **Interactive Dashboard**: Manage and view all tracked locations
 - **Embedded Maps**: Visualize locations on Google Maps
+- **Cyber Theme**: Dark surveillance aesthetic with green/cyan color scheme
 - **Secure Link Generation**: Create unique tracking links for each session
 - **Responsive Design**: Works on desktop and mobile devices
-- **Role-based Access**: Admin and user roles with different permissions
+- **No Backend Required**: Fully static deployment compatible with GitHub Pages
 
 ## 📋 Prerequisites
 
 - Node.js (v18 or higher)
 - npm or yarn
-- MongoDB Atlas account (or local MongoDB instance)
 - Modern web browser with geolocation support
 
 ## 🚀 Quick Start
@@ -39,25 +38,12 @@ cd GeoTracker
 npm install
 ```
 
-3. **Configure environment variables**
-
-Copy the example environment file and configure it:
-```bash
-cp .env.local.example .env.local
-```
-
-Edit `.env.local` with your MongoDB connection string and JWT secret:
-```
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/geotracker
-JWT_SECRET=your-super-secret-jwt-key-minimum-32-characters
-```
-
-4. **Start the development server**
+3. **Start the development server**
 ```bash
 npm run dev
 ```
 
-5. **Open your browser**
+4. **Open your browser**
 Navigate to `http://localhost:3000`
 
 6. **Setup admin account**
@@ -73,43 +59,25 @@ The application requires a Node.js server to run (cannot be deployed as static f
 
 ## 🌐 Deployment Options
 
-### Vercel (Recommended)
+### GitHub Pages (Recommended)
 
-1. Connect your GitHub repository to Vercel
-2. Add environment variables in Vercel dashboard:
-   - `MONGODB_URI`: Your MongoDB connection string
-   - `JWT_SECRET`: A secure random string (minimum 32 characters)
-3. Deploy
+1. Push your code to GitHub
+2. Go to repository Settings → Pages
+3. Set source to GitHub Actions
+4. The included workflow will automatically deploy on push
 
-### Railway / Render / Other PaaS
+### Vercel / Netlify
 
-1. Connect your repository
-2. Set the environment variables
-3. Build command: `npm run build`
-4. Start command: `npm start`
-
-### Docker
-
-```bash
-docker build -t geotracker .
-docker run -p 3000:3000 \
-  -e MONGODB_URI=your_mongodb_uri \
-  -e JWT_SECRET=your_jwt_secret \
-  geotracker
-```
+1. Connect your GitHub repository
+2. Build command: `npm run build`
+3. Output directory: `out`
+4. Deploy
 
 ## 📖 Usage
 
-### First-Time Setup
-
-1. Navigate to the login page
-2. If no users exist, you'll see the "Setup GeoTracker" screen
-3. Create your admin account with name, email, and password (min 6 characters)
-4. You'll be automatically logged in
-
 ### Creating a Tracking Link
 
-1. Login to the dashboard
+1. Go to the Tracker page
 2. Enter a name for your tracker (e.g., "Family Trip", "Lost Phone")
 3. Click "Create Tracking Link"
 4. Share the generated link with the person whose location you want to track
@@ -118,24 +86,16 @@ docker run -p 3000:3000 \
 
 1. When someone clicks the tracking link, they'll be taken to a page that requests location permission
 2. Once permission is granted, their location and device information will be captured
-3. **Location updates automatically every 15 seconds** to the MongoDB database
+3. **Location updates automatically every 15 seconds** to localStorage
 4. The tracked person can see their own location on an embedded map
 5. A visual indicator shows the auto-update status and count
 
 ### Viewing Tracked Locations
 
 1. Go to the dashboard
-2. Click on any tracker card to expand and view all recorded locations
+2. View all tracker cards with their recorded locations
 3. Click "View on Map" to open the location in Google Maps
-4. The dashboard auto-refreshes every 10 seconds
-
-### Managing Users (Admin Only)
-
-1. Click "Manage Users" in the dashboard header
-2. View all registered users
-3. Create new users with the "Add New User" button
-4. Edit user details or change passwords
-5. Delete users (cannot delete yourself)
+4. All data is stored locally in your browser's localStorage
 
 ## 🏗️ Project Structure
 
@@ -143,25 +103,16 @@ docker run -p 3000:3000 \
 GeoTracker/
 ├── src/
 │   ├── app/
-│   │   ├── api/                  # API routes
-│   │   │   ├── auth/             # Authentication endpoints
-│   │   │   ├── location/         # Location tracking endpoint
-│   │   │   ├── trackers/         # Tracker CRUD endpoints
-│   │   │   └── users/            # User management endpoints
-│   │   ├── dashboard/            # Protected dashboard
-│   │   ├── login/                # Login/setup page
-│   │   ├── users/                # User management page
+│   │   ├── dashboard/            # Dashboard page
+│   │   ├── login/                # Login page
+│   │   ├── users/                # Users page
 │   │   ├── track/                # Tracking page (with ID parameter)
-│   │   └── tracker/              # Standalone tracker page
+│   │   ├── tracker/              # Standalone tracker page
+│   │   └── page.tsx              # Home page with cyber theme
 │   ├── lib/
-│   │   ├── mongodb.ts            # MongoDB connection utility
-│   │   ├── auth.ts               # JWT authentication utilities
-│   │   └── storage.ts            # Client-side storage utilities
-│   ├── models/
-│   │   ├── User.ts               # User model with password hashing
-│   │   └── Tracker.ts            # Tracker and location data model
+│   │   └── storage.ts            # localStorage utilities and getOrCreateTracker
 │   └── styles/
-│       └── globals.css           # Global styles
+│       └── globals.css           # Global styles with cyber theme colors
 ├── .env.local.example            # Example environment variables
 ├── next.config.js                # Next.js configuration
 ├── tsconfig.json                 # TypeScript configuration

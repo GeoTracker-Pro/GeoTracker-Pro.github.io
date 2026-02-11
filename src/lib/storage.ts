@@ -55,7 +55,7 @@ export function saveTrackers(trackers: Tracker[]): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(trackers));
   } catch (error) {
-    console.error('Error saving trackers:', error);
+    console.error('Error saving trackers to localStorage:', error);
   }
 }
 
