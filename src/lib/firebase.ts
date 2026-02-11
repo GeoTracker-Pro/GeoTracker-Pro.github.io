@@ -7,13 +7,13 @@ import { getAuth, Auth } from 'firebase/auth';
 // These values are safe to expose in client-side code as Firebase security rules protect the data
 // They can be overridden using environment variables
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyDIHDGN0nAx1CpLCurSQj3TYlR1AwZmu6g",
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "geotracker-865d3.firebaseapp.com",
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "geotracker-865d3",
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "geotracker-865d3.firebasestorage.app",
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "881736898997",
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:881736898997:web:038371eeb1f9e1a54ce1fc",
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "G-TTHVMZNDX4"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyALuk1ujZBLTWMCJJ6ebT9DdH9CtYwVJ6I",
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "geotrackerpro-e3149.firebaseapp.com",
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "geotrackerpro-e3149",
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "geotrackerpro-e3149.firebasestorage.app",
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "948578635618",
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:948578635618:web:803ddf06141f602dd7a63b",
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "G-23B0643XX7"
 };
 
 // Validate Firebase configuration
