@@ -269,6 +269,12 @@
 }
 
 /* Mobile responsive */
+@media (max-width: 768px) {
+  .loginBg {
+    background-attachment: scroll;
+  }
+}
+
 @media (max-width: 480px) {
   .loginBg {
     padding: 12px;
@@ -318,11 +324,5 @@
 
   .toggleBtn {
     font-size: 12px;
-  }
-}
-
-@media (max-width: 768px) {
-  .loginBg {
-    background-attachment: scroll;
   }
 }
