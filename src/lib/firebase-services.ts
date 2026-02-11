@@ -11,7 +11,6 @@ import {
   arrayUnion,
   query,
   where,
-  orderBy,
   Timestamp,
   serverTimestamp,
 } from 'firebase/firestore';
@@ -68,10 +67,10 @@ export async function getTrackersFromFirebase(): Promise<Tracker[]> {
   }
   try {
     const trackersRef = collection(db, TRACKERS_COLLECTION);
-    const q = query(trackersRef, where('userId', '==', user.uid), orderBy('created', 'desc'));
+    const q = query(trackersRef, where('userId', '==', user.uid));
     const snapshot = await getDocs(q);
     
-    return snapshot.docs.map((doc) => {
+    const trackers = snapshot.docs.map((doc) => {
       const data = doc.data();
       return {
         id: doc.id,
@@ -80,6 +79,15 @@ export async function getTrackersFromFirebase(): Promise<Tracker[]> {
         locations: data.locations || [],
       } as Tracker;
     });
+
+    // Sort in JavaScript instead of Firestore to avoid requiring a composite index
+    trackers.sort((a, b) => {
+      const dateA = new Date(a.created).getTime();
+      const dateB = new Date(b.created).getTime();
+      return dateB - dateA; // Newest first
+    });
+
+    return trackers;
   } catch (error) {
     console.error('Error getting trackers:', error);
     throw error;
