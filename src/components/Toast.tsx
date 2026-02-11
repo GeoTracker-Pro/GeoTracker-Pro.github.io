@@ -33,10 +33,12 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       <div style={{
         position: 'fixed',
         top: 20,
-        right: 20,
+        right: 12,
+        left: 12,
         zIndex: 10000,
         display: 'flex',
         flexDirection: 'column',
+        alignItems: 'flex-end',
         gap: 10,
         pointerEvents: 'none',
       }}>
@@ -76,7 +78,8 @@ function ToastItem({ toast, onRemove }: { toast: ToastMessage; onRemove: (id: nu
       pointerEvents: 'auto',
       animation: 'toastSlideIn 0.3s ease-out',
       maxWidth: 350,
-      wordBreak: 'break-word',
+      width: '100%',
+      wordBreak: 'break-word' as const,
     }}>
       {toast.type === 'success' && '✓ '}
       {toast.type === 'error' && '✗ '}

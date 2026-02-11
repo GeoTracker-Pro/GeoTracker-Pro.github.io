@@ -144,3 +144,65 @@
 .trackerInfo strong {
   color: #00ff88;
 }
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .gradientBg {
+    padding: 12px;
+    background-attachment: scroll;
+  }
+
+  .container {
+    padding: 24px 16px;
+  }
+
+  .container h1 {
+    font-size: 18px;
+    letter-spacing: 2px;
+  }
+
+  .autoUpdateStatus {
+    font-size: 12px;
+    padding: 10px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .gradientBg {
+    padding: 8px;
+    align-items: flex-start;
+    padding-top: 16px;
+  }
+
+  .container {
+    padding: 20px 14px;
+  }
+
+  .container h1 {
+    font-size: 16px;
+    letter-spacing: 1px;
+  }
+
+  .subtitle {
+    font-size: 12px;
+    margin-bottom: 20px;
+  }
+
+  .autoUpdateStatus {
+    font-size: 11px;
+    gap: 6px;
+    padding: 8px 10px;
+  }
+
+  .trackerInfo {
+    padding: 12px;
+  }
+
+  .trackerInfo p {
+    font-size: 12px;
+  }
+
+  .lastUpdate {
+    font-size: 10px;
+  }
+}
