@@ -1,12 +1,26 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import '@/styles/globals.css';
 import { Providers } from './providers';
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  themeColor: '#00ff88',
+};
 
 export const metadata: Metadata = {
   title: 'GeoTracker - Location Tracking',
   description: 'Browser-based location tracking application',
+  manifest: '/manifest.json',
   icons: {
     icon: '/favicon.ico',
+    apple: '/icons/icon-192.png',
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'GeoTracker',
   },
 };
 
@@ -34,6 +48,17 @@ export default function RootLayout({
       </head>
       <body>
         <Providers>{children}</Providers>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js').catch(function() {});
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   );
