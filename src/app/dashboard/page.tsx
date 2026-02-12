@@ -335,6 +335,9 @@ export default function Dashboard() {
             <button onClick={toggleTheme} className="theme-toggle">
               {theme === 'dark' ? '☀️ Light' : '🌙 Dark'}
             </button>
+            <Link href="/dashboard/map-view" className={styles.navLink}>
+              🗺️ Map View
+            </Link>
             <Link href="/tracker" className={styles.navLink}>
               📡 Quick Track
             </Link>
