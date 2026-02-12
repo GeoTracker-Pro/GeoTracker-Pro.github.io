@@ -106,7 +106,7 @@ export default function MapView() {
       <div className={styles.header}>
         <div className={styles.headerContent}>
           <div>
-            <h1>🗺️ Shadcn Map View</h1>
+            <h1>🗺️ Tracker Map View</h1>
             <p className={styles.subtitle}>All trackers displayed on interactive map</p>
           </div>
           <div className={styles.headerActions}>

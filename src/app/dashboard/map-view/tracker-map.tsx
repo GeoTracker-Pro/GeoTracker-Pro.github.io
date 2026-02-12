@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { Fragment, useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import type { Tracker } from '@/lib/storage';
@@ -125,7 +125,7 @@ export default function TrackerMap({ trackers, selectedTrackerId, onSelectTracke
         ]);
 
         return (
-          <div key={tracker.id}>
+          <Fragment key={tracker.id}>
             {/* Polyline showing movement history */}
             {tracker.locations.length > 1 && (
               <Polyline
@@ -201,7 +201,7 @@ export default function TrackerMap({ trackers, selectedTrackerId, onSelectTracke
                 </div>
               </Popup>
             </Marker>
-          </div>
+          </Fragment>
         );
       })}
     </MapContainer>
