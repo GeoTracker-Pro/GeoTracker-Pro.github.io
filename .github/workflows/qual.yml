@@ -1,12 +1,21 @@
-- name: Qualys GitHub actions for Web Application Scanning
-  uses: Qualys/github-action-qwas@v1.0.0
-  with:
-    QUALYS_USERNAME: ${{ vars.QUALYS_USERNAME }}
-    QUALYS_PASSWORD: ${{ secrets.QUALYS_PASSWORD }}
-    API_SERVER: ${{ vars.API_SERVER }}
-    SCAN_NAME: ${{ vars.SCAN_NAME }}
-    SCAN_TYPE: ${{ vars.SCAN_TYPE }}
-    WEBAPP_ID: ${{ vars.WEBAPP_ID }}
-    
-    AUTH_RECORD: none
-    # OPTION_PROFILE: "Initial WAS Options" 
+name: Qualys WAS Scan
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch: 
+  
+jobs:
+  qualys-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Qualys GitHub actions for Web Application Scanning
+        uses: Qualys/github-action-qwas@v1.0.0
+        with:
+          QUALYS_USERNAME: ${{ vars.QUALYS_USERNAME }}
+          QUALYS_PASSWORD: ${{ secrets.QUALYS_PASSWORD }}
+          API_SERVER: ${{ vars.API_SERVER }}
+          SCAN_NAME: ${{ vars.SCAN_NAME }}
+          SCAN_TYPE: ${{ vars.SCAN_TYPE }}
+          WEBAPP_ID: ${{ vars.WEBAPP_ID }}
+          AUTH_RECORD: none
