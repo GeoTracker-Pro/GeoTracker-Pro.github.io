@@ -1,0 +1,19 @@
+- name: Qualys GitHub actions for Web Application Scanning
+        uses: Qualys/github-action-qwas@v1.2.1
+        with:
+          # Fetched from Repository Variables
+          QUALYS_USERNAME: ${{ vars.QUALYS_USERNAME }}
+          API_SERVER: ${{ vars.API_SERVER }}
+          SCAN_NAME: ${{ vars.SCAN_NAME }}
+          SCAN_TYPE: ${{ vars.SCAN_TYPE }}
+          WEBAPP_ID: ${{ vars.WEBAPP_ID }}
+          
+          # Fix for the AUTH_RECORD error
+          AUTH_RECORD: none
+
+          # Fetched from Repository Secrets
+          QUALYS_PASSWORD: ${{ secrets.QUALYS_PASSWORD }}
+
+          # Optional settings (pre-filled with standard defaults)
+          FAIL_ON_SCAN_ERROR: true
+          WAIT_FOR_RESULT: true
