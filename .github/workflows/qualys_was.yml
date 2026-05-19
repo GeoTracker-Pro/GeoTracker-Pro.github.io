@@ -14,8 +14,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-     - name: Qualys GitHub actions for Web Application Scanning
-        # Change v2.0.0 back to v1.2.1
+      - name: Qualys GitHub actions for Web Application Scanning
         uses: Qualys/github-action-qwas@v1.2.1
         with:
           QUALYS_USERNAME: ${{ vars.QUALYS_USERNAME }}
