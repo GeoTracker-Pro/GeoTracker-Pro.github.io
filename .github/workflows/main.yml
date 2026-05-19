@@ -1,4 +1,20 @@
-- name: Qualys GitHub actions for Web Application Scanning
+name: Qualys WAS Automatic Scan
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch: 
+
+jobs:
+  qualys-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Qualys GitHub actions for Web Application Scanning
         uses: Qualys/github-action-qwas@v1.0.0
         with:
           # Fetched from Repository Variables
